@@ -17,14 +17,14 @@ body {
     margin: 0;
     display: flex;
     justify-content: center;
-    align-items: center; /* Vertically center the dashboard */
+    align-items: center; 
     min-height: 100vh;
     padding: 20px;
 }
 
 .container {
     width: 100%;
-    max-width: 1000px; /* Wide enough for side-by-side layout */
+    max-width: 1000px;
 }
 
 /* --- HEADER --- */
@@ -66,13 +66,12 @@ h1 {
 
 .action-btn:hover { opacity: 0.9; }
 
-/* FIXED: Small Header Button */
 .header-btn {
     width: auto !important;
     min-width: 0 !important;
     padding: 8px 16px !important;
     font-size: 0.85rem !important;
-    height: 36px; /* Fixed height */
+    height: 36px;
     margin-left: auto;
     letter-spacing: 0.05em;
 }
@@ -80,11 +79,10 @@ h1 {
 /* --- LAYOUT WRAPPER --- */
 .main-content {
     display: flex;
-    gap: 40px; /* Spacing between Checklist and Calendar */
+    gap: 40px; 
     align-items: flex-start;
 }
 
-/* Ensure both sides take equal width */
 .mission-control, .history-section {
     flex: 1;
     min-width: 320px;
@@ -132,7 +130,7 @@ h1 {
     display: flex;
     align-items: center;
     gap: 15px;
-    padding: 15px; /* Slightly larger padding since text is gone */
+    padding: 15px; 
     background: var(--bg);
     border: 1px solid var(--border);
     border-radius: 8px;
@@ -143,7 +141,6 @@ h1 {
     border-color: var(--text-main);
 }
 
-/* Custom Checkbox Styling */
 input[type="checkbox"] {
     appearance: none;
     width: 24px;
@@ -184,7 +181,6 @@ label {
     font-size: 1.1rem;
 }
 
-/* Big "Complete Day" Button */
 #save-btn {
     width: 100%;
     margin-top: 25px;
@@ -204,8 +200,46 @@ label {
 
 .calendar-grid {
     display: grid;
-    grid-template-columns: repeat(7, 1fr); /* 7 days per row */
+    grid-template-columns: repeat(7, 1fr);
     gap: 8px;
+    max-height: 400px; 
+    overflow-y: auto;  
+    padding-right: 5px; 
+    align-content: start;
+}
+
+/* Custom Scrollbar */
+.calendar-grid::-webkit-scrollbar {
+    width: 8px;
+}
+.calendar-grid::-webkit-scrollbar-track {
+    background: var(--surface); 
+    border-radius: 4px;
+}
+.calendar-grid::-webkit-scrollbar-thumb {
+    background: var(--border); 
+    border-radius: 4px;
+}
+.calendar-grid::-webkit-scrollbar-thumb:hover {
+    background: var(--text-muted); 
+}
+
+/* NEW: Monthly Separator Header */
+.month-header {
+    grid-column: 1 / -1; /* Spans full width */
+    font-size: 0.85rem;
+    font-weight: 800;
+    color: var(--text-main);
+    background-color: var(--surface);
+    padding: 15px 5px 5px 5px;
+    margin-top: 5px;
+    margin-bottom: 5px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    border-bottom: 1px solid var(--border);
+    position: sticky; /* Sticks to top when scrolling */
+    top: 0;
+    z-index: 10;
 }
 
 .day-box {
@@ -221,7 +255,6 @@ label {
     font-weight: 600;
 }
 
-/* Dynamic Calendar Colors */
 .day-box.success {
     background-color: var(--accent-green);
     border-color: var(--accent-green);
@@ -258,7 +291,7 @@ label {
 .dot.green { background: var(--accent-green); }
 .dot.gray { background: var(--surface); border: 1px solid var(--border); }
 
-/* --- MODAL STYLES --- */
+/* --- MODAL --- */
 .modal {
     position: fixed;
     z-index: 1000;
@@ -266,7 +299,7 @@ label {
     top: 0;
     width: 100%;
     height: 100%;
-    background-color: rgba(0,0,0,0.85); /* Darker overlay */
+    background-color: rgba(0,0,0,0.85); 
     backdrop-filter: blur(5px);
     display: flex;
     justify-content: center;
@@ -307,10 +340,10 @@ label {
     display: block;
 }
 
-/* --- MOBILE RESPONSIVE --- */
+/* --- MOBILE --- */
 @media (max-width: 768px) {
     .main-content {
-        flex-direction: column; /* Stack on mobile */
+        flex-direction: column; 
     }
     
     .mission-control, .history-section {

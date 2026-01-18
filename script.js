@@ -21,7 +21,6 @@ document.addEventListener("DOMContentLoaded", () => {
         profileModal.classList.add("hidden");
     });
 
-    // Close modal when clicking outside the photo container
     window.addEventListener("click", (e) => {
         if (e.target === profileModal) {
             profileModal.classList.add("hidden");
@@ -30,28 +29,23 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // --- 1. DATE MANAGEMENT ---
     const now = new Date();
-    // Use ISO string (YYYY-MM-DD) as the unique key for today
     const todayKey = now.toISOString().split('T')[0]; 
     currentDateEl.innerText = now.toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' });
 
     // --- 2. LOCAL STORAGE RESET LOGIC ---
-    // We check the "last visited date" stored in browser
     const lastVisitKey = localStorage.getItem("mission_last_visit");
 
     if (lastVisitKey !== todayKey) {
-        // NEW DAY DETECTED: 
-        // 1. Uncheck all boxes
+        // NEW DAY DETECTED
         TASK_IDS.forEach(id => {
             localStorage.setItem(id, "false"); 
             document.getElementById(id).checked = false;
         });
         
-        // 2. If yesterday wasn't logged, mark it as 'failed' in history
         if (lastVisitKey) {
             checkAndAutoFailPreviousDay(lastVisitKey);
         }
 
-        // 3. Update 'last visit' to today
         localStorage.setItem("mission_last_visit", todayKey);
         updateStatusBadge("PENDING");
     } else {
@@ -61,7 +55,6 @@ document.addEventListener("DOMContentLoaded", () => {
             document.getElementById(id).checked = isChecked;
         });
         
-        // Restore status if already logged today
         const history = getHistory();
         if (history[todayKey]) {
             updateStatusBadge(history[todayKey]);
@@ -69,25 +62,20 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     // --- 3. EVENT LISTENERS ---
-    
-    // Save checkbox state immediately when clicked
     TASK_IDS.forEach(id => {
         document.getElementById(id).addEventListener("change", (e) => {
             localStorage.setItem(id, e.target.checked);
         });
     });
 
-    // "COMPLETE DAY" Button Logic
     saveBtn.addEventListener("click", () => {
         const allChecked = TASK_IDS.every(id => document.getElementById(id).checked);
         const status = allChecked ? "SUCCESS" : "FAILED";
         
-        // Save to History
         const history = getHistory();
         history[todayKey] = status;
         localStorage.setItem("mission_history", JSON.stringify(history));
 
-        // Visual Feedback
         updateStatusBadge(status);
         renderCalendar();
         
@@ -98,29 +86,46 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     });
 
-    // --- 4. CALENDAR RENDERER ---
+    // --- 4. CALENDAR RENDERER (WITH MONTH SEPARATORS) ---
     function renderCalendar() {
         const grid = document.getElementById("calendar-grid");
         grid.innerHTML = "";
         const history = getHistory();
+        
+        let lastMonthLabel = "";
 
-        // Show last 28 days (4 weeks)
-        for (let i = 27; i >= 0; i--) {
+        // Loop through last 365 days
+        for (let i = 0; i < 365; i++) {
+            // Logic: 0 = 1 year ago, 364 = Today
             const d = new Date();
-            d.setDate(now.getDate() - i);
+            d.setDate(now.getDate() - (364 - i)); 
+            
             const dKey = d.toISOString().split('T')[0];
             const dayNum = d.getDate();
+            
+            // Format Month (e.g., "January 2026")
+            const monthLabel = d.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+
+            // INJECT HEADER IF MONTH CHANGED
+            if (monthLabel !== lastMonthLabel) {
+                const headerEl = document.createElement("div");
+                headerEl.classList.add("month-header");
+                headerEl.innerText = monthLabel;
+                grid.appendChild(headerEl);
+                lastMonthLabel = monthLabel;
+            }
 
             const dayEl = document.createElement("div");
             dayEl.classList.add("day-box");
             dayEl.innerText = dayNum;
+            dayEl.title = d.toDateString(); // Tooltip
 
             // Mark Today
             if (dKey === todayKey) {
                 dayEl.classList.add("today");
             }
 
-            // Apply Colors based on History
+            // Apply Colors
             if (history[dKey] === "SUCCESS") {
                 dayEl.classList.add("success");
             } else if (history[dKey] === "FAILED") {
@@ -129,6 +134,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
             grid.appendChild(dayEl);
         }
+
+        // Auto-scroll to bottom
+        requestAnimationFrame(() => {
+            grid.scrollTop = grid.scrollHeight;
+        });
     }
 
     // --- HELPER FUNCTIONS ---
@@ -147,11 +157,10 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     }
 
-    // If user forgot to log yesterday, mark it red automatically
     function checkAndAutoFailPreviousDay(prevDateKey) {
         const history = getHistory();
         if (!history[prevDateKey]) {
-            history[prevDateKey] = "FAILED"; // Auto-fail
+            history[prevDateKey] = "FAILED"; 
             localStorage.setItem("mission_history", JSON.stringify(history));
         }
     }
