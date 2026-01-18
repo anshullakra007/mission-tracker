@@ -1,0 +1,13 @@
+# Mac System Files
+.DS_Store
+
+# Windows System Files
+Thumbs.db
+Desktop.ini
+
+# VS Code Settings (Optional, good practice to ignore personal settings)
+.vscode/
+
+# Node Modules (If you ever add npm packages later)
+node_modules/
+package-lock.json
