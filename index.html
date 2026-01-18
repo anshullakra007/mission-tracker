@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mission | Daily Protocol</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+    <div class="container">
+        
+        <header>
+            <div class="header-content">
+                <h1>MISSION</h1>
+                <p class="subtitle">Discipline > Motivation</p>
+            </div>
+            <button id="view-profile-btn" class="action-btn header-btn">VIEW PROFILE</button>
+        </header>
+
+        <div class="main-content">
+            
+            <section class="mission-control">
+                <div class="date-header">
+                    <span id="current-date"></span>
+                    <span class="status-badge" id="daily-status">Pending</span>
+                </div>
+                
+                <div class="checklist">
+                    <div class="task-item">
+                        <input type="checkbox" id="task-tuf">
+                        <label for="task-tuf">
+                            <span class="task-name">TUF (10)</span>
+                        </label>
+                    </div>
+
+                    <div class="task-item">
+                        <input type="checkbox" id="task-cp31">
+                        <label for="task-cp31">
+                            <span class="task-name">CP 31</span>
+                        </label>
+                    </div>
+
+                    <div class="task-item">
+                        <input type="checkbox" id="task-vc">
+                        <label for="task-vc">
+                            <span class="task-name">V.C.</span>
+                        </label>
+                    </div>
+                </div>
+
+                <button id="save-btn" class="action-btn">COMPLETE DAY</button>
+            </section>
+
+            <section class="history-section">
+                <h2>Performance History</h2>
+                <div class="calendar-grid" id="calendar-grid"></div>
+                <div class="legend">
+                    <div class="legend-item"><span class="dot red"></span> Missed</div>
+                    <div class="legend-item"><span class="dot green"></span> Completed</div>
+                    <div class="legend-item"><span class="dot gray"></span> Pending</div>
+                </div>
+            </section>
+
+        </div>
+
+    </div>
+
+    <div id="profile-modal" class="modal hidden">
+        <div class="modal-content">
+            <span id="close-modal-btn" class="close-btn">&times;</span>
+            <img src="profile.jpg" alt="Profile" class="profile-pic-large">
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
