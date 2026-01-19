@@ -32,6 +32,37 @@ document.addEventListener("DOMContentLoaded", () => {
     const todayKey = now.toISOString().split('T')[0]; 
     currentDateEl.innerText = now.toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' });
 
+    // 🟢 CHANGED FUNCTION: AUTO-MARK ABSENT DAYS 🟢
+    function markPastDaysAsAbsent() {
+        const history = getHistory();
+        let hasChanges = false;
+
+        // Start Date: Dec 22, 2025 (The day you started tracking)
+        const startDate = new Date("2025-12-22");
+        const todayDate = new Date();
+        todayDate.setHours(0, 0, 0, 0); // Normalize to midnight
+
+        // Loop from Start Date -> Yesterday
+        for (let d = new Date(startDate); d < todayDate; d.setDate(d.getDate() + 1)) {
+            const dateKey = d.toISOString().split('T')[0];
+            
+            // If this date has NO status in history, mark it ABSENT (Yellow)
+            if (!history[dateKey]) {
+                history[dateKey] = "ABSENT"; // 🟢 CHANGED from "FAILED" to "ABSENT"
+                hasChanges = true;
+                console.log(`⚠️ Auto-marked absent day: ${dateKey}`);
+            }
+        }
+
+        // Save only if we found missed days
+        if (hasChanges) {
+            localStorage.setItem("mission_history", JSON.stringify(history));
+        }
+    }
+
+    // Call this IMMEDIATELY to fix history before rendering
+    markPastDaysAsAbsent();
+
     // --- 2. LOCAL STORAGE RESET LOGIC ---
     const lastVisitKey = localStorage.getItem("mission_last_visit");
 
@@ -42,10 +73,6 @@ document.addEventListener("DOMContentLoaded", () => {
             document.getElementById(id).checked = false;
         });
         
-        if (lastVisitKey) {
-            checkAndAutoFailPreviousDay(lastVisitKey);
-        }
-
         localStorage.setItem("mission_last_visit", todayKey);
         updateStatusBadge("PENDING");
     } else {
@@ -70,7 +97,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
     saveBtn.addEventListener("click", () => {
         const allChecked = TASK_IDS.every(id => document.getElementById(id).checked);
-        const status = allChecked ? "SUCCESS" : "FAILED";
+        // Note: When clicking save, it's either SUCCESS (green) or FAILED (red/incomplete work)
+        const status = allChecked ? "SUCCESS" : "FAILED"; 
         
         const history = getHistory();
         history[todayKey] = status;
@@ -125,11 +153,15 @@ document.addEventListener("DOMContentLoaded", () => {
                 dayEl.classList.add("today");
             }
 
-            // Apply Colors
-            if (history[dKey] === "SUCCESS") {
+            // 🟢 CHANGED: Apply Colors based on status
+            const status = history[dKey];
+            if (status === "SUCCESS") {
                 dayEl.classList.add("success");
-            } else if (history[dKey] === "FAILED") {
+            } else if (status === "FAILED") {
                 dayEl.classList.add("failed");
+            } else if (status === "ABSENT") {
+                // 🟢 NEW CONDITION for Yellow
+                dayEl.classList.add("absent");
             }
 
             grid.appendChild(dayEl);
@@ -152,16 +184,11 @@ document.addEventListener("DOMContentLoaded", () => {
             statusBadge.style.color = "var(--accent-green)";
         } else if (status === "FAILED") {
             statusBadge.style.color = "var(--accent-red)";
+        } else if (status === "ABSENT") {
+            // 🟢 NEW COLOR for badge
+            statusBadge.style.color = "var(--accent-yellow)";
         } else {
             statusBadge.style.color = "var(--text-muted)";
-        }
-    }
-
-    function checkAndAutoFailPreviousDay(prevDateKey) {
-        const history = getHistory();
-        if (!history[prevDateKey]) {
-            history[prevDateKey] = "FAILED"; 
-            localStorage.setItem("mission_history", JSON.stringify(history));
         }
     }
 
