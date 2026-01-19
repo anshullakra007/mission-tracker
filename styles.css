@@ -6,8 +6,6 @@
     --text-muted: #a3a3a3;
     --accent-red: #ff3b30;   /* Bright Red for Failure */
     --accent-green: #34c759; /* Green for Success */
-    /* 🟢 NEW: Yellow for Absent days */
-    --accent-yellow: #f59e0b; 
 }
 
 * { box-sizing: border-box; }
@@ -269,13 +267,6 @@ label {
     color: #fff;
 }
 
-/* 🟢 NEW: Style for Absent (Yellow) */
-.day-box.absent {
-    background-color: var(--accent-yellow);
-    border-color: var(--accent-yellow);
-    color: #111827; /* Dark text for contrast */
-}
-
 .day-box.today {
     border: 2px solid var(--text-main);
     color: var(--text-main);
@@ -298,8 +289,6 @@ label {
 }
 .dot.red { background: var(--accent-red); }
 .dot.green { background: var(--accent-green); }
-/* 🟢 NEW: Yellow Dot for Legend */
-.dot.yellow { background: var(--accent-yellow); }
 .dot.gray { background: var(--surface); border: 1px solid var(--border); }
 
 /* --- MODAL --- */
