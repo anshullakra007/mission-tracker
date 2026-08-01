@@ -14,6 +14,26 @@ A minimalist, daily-resetting checklist designed for high-performance tracking. 
     * ⚪ **White Border:** Current Day.
 * **Privacy First:** All data is stored locally in your browser. No databases, no tracking.
 
+## 🏗️ System Architecture & Midnight Rollover Flow
+
+```mermaid
+graph TD
+    User[Competitive Programmer / Student] -->|Check/Uncheck Tasks| DOM[HTML5 / CSS3 Flex-Grid UI]
+    User -->|Complete Day Action| DOM
+    
+    subgraph "Vanilla JavaScript State Controller :script.js"
+        DOM <-->|Event Listeners & State Binding| Controller[State Controller & Midnight Rollover Engine]
+        Controller -->|Date & Timestamp Comparison| Reset{Is New Day?}
+        Reset -->|Yes: 00:00 Rollover| Clear[Auto-Reset Daily Checkboxes]
+        Reset -->|No: Same Day| Track[Update Checkbox State]
+    end
+    
+    subgraph "Browser Storage Engine"
+        Controller <-->|JSON Serialization| Storage[(Browser localStorage API)]
+        Storage -->|Persist Calendar History| Grid[Performance Heatmap: Success / Fail]
+    end
+```
+
 ## 🛠️ Tech Stack
 * **Frontend:** HTML5, CSS3 (Modern Flexbox/Grid)
 * **Logic:** Vanilla JavaScript (ES6+)
