@@ -1,19 +1,5 @@
 # Mission | Daily Protocol Tracker
 
-## Why I built this ?
-
-### Situation
-Organizing complex workflows and personal goals requires a more robust state-machine than standard "to-do" lists can provide.
-
-### Task
-I wanted to build a task tracking application with complex state transitions, priority queues, and real-time updates.
-
-### Action
-I engineered a frontend application utilizing modern React state management (Redux/Zustand) and a backend capable of persisting complex hierarchical data. I implemented drag-and-drop KanBan mechanics and utilized optimistic UI updates to make the application feel instantly responsive.
-
-### Result
-The mission tracker provides a seamless, highly tactile user experience. It demonstrates my ability to manage complex global state in the browser while maintaining perfect synchronization with a backend database.
-
 ---
 
 > "Discipline > Motivation"
@@ -74,3 +60,19 @@ To change the tasks, edit the `TASK_IDS` array and the HTML in `index.html`.
 ---
 *Built by [Anshul Kumar](https://github.com/anshullakra007)*
 ---
+
+---
+
+## Why I built this ?
+
+### Situation
+Organizing complex workflows and personal goals requires a more robust state-machine than standard "to-do" lists can provide.
+
+### Task
+I wanted to build a task tracking application with complex state transitions, priority queues, and real-time updates.
+
+### Action
+I engineered a frontend application utilizing modern React state management (Redux/Zustand) and a backend capable of persisting complex hierarchical data. I implemented drag-and-drop KanBan mechanics and utilized optimistic UI updates to make the application feel instantly responsive.
+
+### Result
+The mission tracker provides a seamless, highly tactile user experience. It demonstrates my ability to manage complex global state in the browser while maintaining perfect synchronization with a backend database.
