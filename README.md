@@ -1,20 +1,20 @@
-# 🎯 M | Dly l Tk
+#  M | Dly l Tk
 
 > "Dl > Mv"
 
 A l, ly- kl f -f k. Bul y Cv l uy.
 
-## 🚀 Fu
+##  Fu
 * **Dly Au-R:** T kl ully uk lf f w y (ll ).
 * **f Hy:** Tk yu ly l u (Su/Fl) vulz l .
 * ** D:** U `llS` v yu y kb , yu v l u f.
 * **Vul Fbk:**
- * 🟢 **G:** Dy Cl (All k ).
- * 🔴 **R:** Dy Fl (Tk ).
- * ⚪ **W B:** Cu Dy.
+ *  **G:** Dy Cl (All k ).
+ *  **R:** Dy Fl (Tk ).
+ *  **W B:** Cu Dy.
 * **vy F:** All llly yu bw. N b, k.
 
-## 🏗️ Sy Au & M Rllv Flw
+## ️ Sy Au & M Rllv Flw
 
 ```
  TD
@@ -34,25 +34,25 @@ A l, ly- kl f -f k. Bul y Cv l uy.
  
 ```
 
-## 🛠️ T Sk
+## ️ T Sk
 * **F:** HTML5, CSS3 (M Flb/G)
 * **L:** Vll JvS (S6+)
 * **S:** Bw LlS AI
 
-## 📦 Hw Ru Llly
+##  Hw Ru Llly
 1. Cl y:
  ```b
  l [://ub./YOURUSRNAM/-k.](://ub./YOURUSRNAM/-k.)
  ```
 2. O `.l` yu bw.
 
-## 📸 U
+##  U
 1. **Ck ff** yu k yu l uu y.
 2. Clk **"COMLT DAY"** bf .
 3. If ll k , y k **Su** l.
 4. If yu f l y, ully k **Fl** yu v.
 
-## 🎨 Cuz
+##  Cuz
 T k, `TASKIDS` y HTML `.l`.
 
 ---
