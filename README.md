@@ -1,67 +1,67 @@
-# 🎯 Mission | Daily Protocol Tracker
+# 🎯 M | Dly l Tk
 
-> "Discipline > Motivation"
+> "Dl > Mv"
 
-A minimalist, daily-resetting checklist designed for high-performance tracking. Built to maintain consistency in Competitive Programming and algorithmic study.
+A l, ly- kl f -f k. Bul y Cv l uy.
 
-## 🚀 Features
-* **Daily Auto-Reset:** The checklist automatically unchecks itself at the start of a new day (local time).
-* **Performance History:** Tracks your daily completion status (Success/Fail) and visualizes it on a calendar grid.
-* **Persistent Data:** Uses `localStorage` to save your history and checkbox state, so you never lose progress upon refresh.
-* **Visual Feedback:**
-    * 🟢 **Green:** Day Completed (All tasks done).
-    * 🔴 **Red:** Day Failed (Tasks missed).
-    * ⚪ **White Border:** Current Day.
-* **Privacy First:** All data is stored locally in your browser. No databases, no tracking.
+## 🚀 Fu
+* **Dly Au-R:** T kl ully uk lf f w y (ll ).
+* **f Hy:** Tk yu ly l u (Su/Fl) vulz l .
+* ** D:** U `llS` v yu y kb , yu v l u f.
+* **Vul Fbk:**
+ * 🟢 **G:** Dy Cl (All k ).
+ * 🔴 **R:** Dy Fl (Tk ).
+ * ⚪ **W B:** Cu Dy.
+* **vy F:** All llly yu bw. N b, k.
 
-## 🏗️ System Architecture & Midnight Rollover Flow
+## 🏗️ Sy Au & M Rllv Flw
 
-```mermaid
-graph TD
-    User[Competitive Programmer / Student] -->|Check/Uncheck Tasks| DOM[HTML5 / CSS3 Flex-Grid UI]
-    User -->|Complete Day Action| DOM
-    
-    subgraph "Vanilla JavaScript State Controller :script.js"
-        DOM <-->|Event Listeners & State Binding| Controller[State Controller & Midnight Rollover Engine]
-        Controller -->|Date & Timestamp Comparison| Reset{Is New Day?}
-        Reset -->|Yes: 00:00 Rollover| Clear[Auto-Reset Daily Checkboxes]
-        Reset -->|No: Same Day| Track[Update Checkbox State]
-    end
-    
-    subgraph "Browser Storage Engine"
-        Controller <-->|JSON Serialization| Storage[(Browser localStorage API)]
-        Storage -->|Persist Calendar History| Grid[Performance Heatmap: Success / Fail]
-    end
+```
+ TD
+ U[Cv / Su] -->|Ck/Uk Tk| DOM[HTML5 / CSS3 Fl-G UI]
+ U -->|Cl Dy A| DOM
+ 
+ ub "Vll JvS S Cll :."
+ DOM <-->|v L & S B| Cll[S Cll & M Rllv ]
+ Cll -->|D & T C| RI Nw Dy?
+ R -->|Y: 00:00 Rllv| Cl[Au-R Dly Ckb]
+ R -->|N: S Dy| Tk[U Ckb S]
+ 
+ 
+ ub "Bw S "
+ Cll <-->|JSON Slz| S[(Bw llS AI)]
+ S -->| Cl Hy| G[f H: Su / Fl]
+ 
 ```
 
-## 🛠️ Tech Stack
-* **Frontend:** HTML5, CSS3 (Modern Flexbox/Grid)
-* **Logic:** Vanilla JavaScript (ES6+)
-* **Storage:** Browser LocalStorage API
+## 🛠️ T Sk
+* **F:** HTML5, CSS3 (M Flb/G)
+* **L:** Vll JvS (S6+)
+* **S:** Bw LlS AI
 
-## 📦 How to Run Locally
-1.  Clone the repository:
-    ```bash
-    git clone [https://github.com/YOUR_USERNAME/mission-tracker.git](https://github.com/YOUR_USERNAME/mission-tracker.git)
-    ```
-2.  Open `index.html` in your browser.
+## 📦 Hw Ru Llly
+1. Cl y:
+ ```b
+ l [://ub./YOURUSRNAM/-k.](://ub./YOURUSRNAM/-k.)
+ ```
+2. O `.l` yu bw.
 
-## 📸 Usage
-1.  **Check off** your tasks as you complete them throughout the day.
-2.  Click **"COMPLETE DAY"** before midnight.
-3.  If all tasks are done, the day is marked as **Success** in the calendar.
-4.  If you forget to log a day, it is automatically marked as **Failed** the next time you visit.
+## 📸 U
+1. **Ck ff** yu k yu l uu y.
+2. Clk **"COMLT DAY"** bf .
+3. If ll k , y k **Su** l.
+4. If yu f l y, ully k **Fl** yu v.
 
-## 🎨 Customization
-To change the tasks, edit the `TASK_IDS` array and the HTML in `index.html`.
+## 🎨 Cuz
+T k, `TASKIDS` y HTML `.l`.
 
 ---
-*Built by [Anshul Kumar](https://github.com/anshullakra007)*
+*Bul by [Aul Ku](://ub./ullk007)*
 ---
 
-## Why I built this ?
+## Wy I bul ?
 
-**Situation:** Organizing complex workflows and personal goals requires a more robust state-machine than standard "to-do" lists can provide.
-**Task:** I wanted to build a task tracking application with complex state transitions, priority queues, and real-time updates.
-**Action:** I engineered a frontend application utilizing modern React state management (Redux/Zustand) and a backend capable of persisting complex hierarchical data. I implemented drag-and-drop KanBan mechanics and utilized optimistic UI updates to make the application feel instantly responsive.
-**Result:** The mission tracker provides a seamless, highly tactile user experience. It demonstrates my ability to manage complex global state in the browser while maintaining perfect synchronization with a backend database.
+**Su:** Oz l wkflw l l qu bu - "-" l v.
+**Tk:** I w bul k k l w l , y quu, l- u.
+**A:** I f l ulz R (Ru/Zu) bk bl f l l . I l -- KB ulz UI u k l fl ly v.
+**Rul:** T k v l, ly l u . I y bly l lbl bw wl f yz w bk b.
