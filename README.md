@@ -59,7 +59,7 @@ To change the tasks, edit the `TASK_IDS` array and the HTML in `index.html`.
 *Built by [Anshul Kumar](https://github.com/anshullakra007)*
 ---
 
-## 🌟 STAR Story: mission-tracker
+## Why I built this ?
 
 **Situation:** 
 While building modern software applications, developing structured and scalable solutions is critical. The requirement was to build and maintain `mission-tracker` to address specific technical challenges and provide a robust implementation.
