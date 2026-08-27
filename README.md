@@ -1,4 +1,4 @@
-# Mission | Daily Protocol Tracker 🚀
+# Mission | Daily Protocol Tracker 
 
 ---
 
@@ -6,7 +6,7 @@
 
 A minimalist, daily-resetting checklist designed for high-performance tracking. Built to maintain consistency in Competitive Programming and algorithmic study.
 
-## ✨ Features
+##  Features
 * Daily Auto-Reset: The checklist automatically unchecks itself at the start of a new day (local time).
 * Performance History: Tracks your daily completion status (Success/Fail) and visualizes it on a calendar grid.
 * Persistent Data: Uses `localStorage` to save your history and checkbox state, so you never lose progress upon refresh.
@@ -36,7 +36,7 @@ graph TD
     end
 ```
 
-## 💻 Tech Stack
+##  Tech Stack
 * Frontend: HTML5, CSS3 (Modern Flexbox/Grid)
 * Logic: Vanilla JavaScript (ES6+)
 * Storage: Browser LocalStorage API
@@ -48,7 +48,7 @@ graph TD
     ```
 2. Open `index.html` in your browser.
 
-## 💡 Usage
+##  Usage
 1. Check off your tasks as you complete them throughout the day.
 2. Click "COMPLETE DAY" before midnight.
 3. If all tasks are done, the day is marked as Success in the calendar.
