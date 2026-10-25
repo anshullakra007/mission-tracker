@@ -617,6 +617,18 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     });
 
+    // Prevent quick source links from toggling parent label checkbox on mobile touch
+    if (dsaQuickLink) {
+        dsaQuickLink.addEventListener("click", (e) => {
+            e.stopPropagation();
+        });
+    }
+    if (coreQuickLink) {
+        coreQuickLink.addEventListener("click", (e) => {
+            e.stopPropagation();
+        });
+    }
+
     // Date Navigation Buttons
     if (prevDayBtn) {
         prevDayBtn.addEventListener("click", () => {
