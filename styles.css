@@ -66,14 +66,61 @@ h1 {
 
 .action-btn:hover { opacity: 0.9; }
 
+.header-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-left: auto;
+    flex-wrap: wrap;
+}
+
 .header-btn {
     width: auto !important;
     min-width: 0 !important;
     padding: 8px 16px !important;
     font-size: 0.85rem !important;
     height: 36px;
-    margin-left: auto;
     letter-spacing: 0.05em;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.sync-btn {
+    background: var(--surface) !important;
+    border: 1px solid var(--border) !important;
+    color: var(--text-main) !important;
+    gap: 8px;
+}
+
+.sync-btn:hover {
+    border-color: var(--text-main) !important;
+    background: rgba(255, 255, 255, 0.06) !important;
+}
+
+.sync-status-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--text-muted);
+    transition: all 0.3s ease;
+    display: inline-block;
+}
+
+.sync-status-dot.active {
+    background: var(--accent-green);
+    box-shadow: 0 0 8px rgba(52, 199, 89, 0.7);
+}
+
+.sync-status-dot.syncing {
+    background: #38bdf8;
+    box-shadow: 0 0 8px rgba(56, 189, 248, 0.7);
+    animation: syncPulse 0.9s infinite alternate;
+}
+
+@keyframes syncPulse {
+    from { opacity: 0.3; transform: scale(0.9); }
+    to { opacity: 1; transform: scale(1.1); }
 }
 
 /* --- LAYOUT WRAPPER --- */
@@ -681,6 +728,155 @@ label {
     border-top: 1px solid var(--border);
     padding-top: 12px;
     line-height: 1.4;
+}
+
+/* --- SYNC MODAL --- */
+.sync-modal-content {
+    background-color: var(--surface);
+    padding: 24px;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    position: relative;
+    width: 100%;
+    max-width: 520px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    box-shadow: 0 20px 45px rgba(0, 0, 0, 0.8);
+}
+
+.sync-desc {
+    font-size: 0.88rem;
+    color: var(--text-muted);
+    line-height: 1.5;
+    margin: 0 0 16px 0;
+}
+
+.sync-desc strong {
+    color: var(--text-main);
+}
+
+.sync-input-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 16px;
+}
+
+.sync-input-group label {
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.sync-input-row {
+    display: flex;
+    gap: 8px;
+}
+
+#sync-key-input {
+    flex: 1;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    color: var(--text-main);
+    padding: 10px 14px;
+    border-radius: 6px;
+    font-size: 0.95rem;
+    font-family: inherit;
+    font-weight: 600;
+    outline: none;
+    transition: border-color 0.2s;
+}
+
+#sync-key-input:focus {
+    border-color: #38bdf8;
+}
+
+.sync-hint {
+    font-size: 0.72rem;
+    color: var(--text-muted);
+    line-height: 1.4;
+}
+
+.sync-status-card {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 16px;
+}
+
+.sync-card-row {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.8rem;
+}
+
+.sync-label {
+    color: var(--text-muted);
+    font-weight: 600;
+}
+
+.sync-value {
+    color: var(--text-main);
+    font-weight: 700;
+}
+
+.sync-modal-actions {
+    display: flex;
+    gap: 10px;
+}
+
+.sync-primary-btn {
+    flex: 1;
+    margin: 0 !important;
+    padding: 12px !important;
+    font-size: 0.85rem !important;
+}
+
+.sync-action-btn {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--text-main);
+    padding: 8px 12px;
+    border-radius: 6px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.sync-action-btn:hover {
+    border-color: var(--text-main);
+    background: rgba(255, 255, 255, 0.08);
+}
+
+.sync-action-btn.secondary {
+    white-space: nowrap;
+}
+
+.sync-action-btn.danger {
+    color: var(--accent-red);
+    border-color: rgba(255, 59, 48, 0.35);
+}
+
+.sync-action-btn.danger:hover {
+    background: rgba(255, 59, 48, 0.12);
+    border-color: var(--accent-red);
+}
+
+.sync-action-btn.hidden {
+    display: none;
 }
 
 /* --- MOBILE --- */
