@@ -25,7 +25,12 @@
             <section class="mission-control">
                 <div class="date-header">
                     <div class="date-info">
-                        <span id="current-date"></span>
+                        <div class="date-nav-row">
+                            <button id="prev-day-btn" class="date-nav-btn" title="Previous day">&larr;</button>
+                            <span id="current-date"></span>
+                            <button id="next-day-btn" class="date-nav-btn" title="Next day">&rarr;</button>
+                            <button id="jump-today-btn" class="jump-today-btn hidden" title="Return to today">Today ↩</button>
+                        </div>
                         <span class="plan-tag" id="plan-tag">Study Plan: Day 1 of 21</span>
                     </div>
                     <span class="status-badge" id="daily-status">Pending</span>
@@ -69,7 +74,10 @@
             </section>
 
             <section class="history-section">
-                <h2>Performance History</h2>
+                <div class="history-header">
+                    <h2>Performance History</h2>
+                    <span class="history-hint">Click any day to revisit &amp; complete</span>
+                </div>
                 <div class="calendar-grid" id="calendar-grid"></div>
                 <div class="legend">
                     <div class="legend-item"><span class="dot red"></span> Missed</div>

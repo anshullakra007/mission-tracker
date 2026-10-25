@@ -109,6 +109,63 @@ h1 {
     gap: 4px;
 }
 
+.date-nav-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.date-nav-btn {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--text-muted);
+    font-size: 0.85rem;
+    width: 28px;
+    height: 28px;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    line-height: 1;
+}
+
+.date-nav-btn:hover:not(:disabled) {
+    color: var(--text-main);
+    border-color: var(--text-main);
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.date-nav-btn:disabled {
+    opacity: 0.25;
+    cursor: not-allowed;
+}
+
+.jump-today-btn {
+    background: rgba(52, 199, 89, 0.12);
+    border: 1px solid rgba(52, 199, 89, 0.35);
+    color: var(--accent-green);
+    font-size: 0.68rem;
+    font-weight: 700;
+    padding: 3px 8px;
+    border-radius: 4px;
+    cursor: pointer;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    transition: all 0.2s;
+}
+
+.jump-today-btn:hover {
+    background: rgba(52, 199, 89, 0.22);
+    border-color: var(--accent-green);
+}
+
+.jump-today-btn.hidden {
+    display: none;
+}
+
 #current-date {
     font-size: 1.1rem;
     font-weight: 700;
@@ -267,13 +324,27 @@ label {
 }
 
 /* --- CALENDAR SECTION --- */
+.history-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
 .history-section h2 {
     font-size: 1rem;
     text-transform: uppercase;
     color: var(--text-muted);
-    margin-bottom: 20px;
     letter-spacing: 0.05em;
-    margin-top: 0;
+    margin: 0;
+}
+
+.history-hint {
+    font-size: 0.72rem;
+    color: var(--text-muted);
+    font-weight: 500;
 }
 
 .calendar-grid {
@@ -331,6 +402,21 @@ label {
     font-size: 0.8rem;
     color: var(--text-muted);
     font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    user-select: none;
+}
+
+.day-box:hover {
+    border-color: var(--text-main);
+    transform: scale(1.08);
+}
+
+.day-box.selected {
+    outline: 2px solid #38bdf8;
+    outline-offset: 1px;
+    box-shadow: 0 0 8px rgba(56, 189, 248, 0.4);
+    z-index: 5;
 }
 
 .day-box.success {

@@ -299,6 +299,11 @@ document.addEventListener("DOMContentLoaded", () => {
     const dsaQuickLink = document.getElementById("dsa-quick-link");
     const coreQuickLink = document.getElementById("core-quick-link");
 
+    // Navigation Elements
+    const prevDayBtn = document.getElementById("prev-day-btn");
+    const nextDayBtn = document.getElementById("next-day-btn");
+    const jumpTodayBtn = document.getElementById("jump-today-btn");
+
     // Modal Elements
     const todaySourcesBtn = document.getElementById("today-sources-btn");
     const sourcesModal = document.getElementById("sources-modal");
@@ -324,9 +329,15 @@ document.addEventListener("DOMContentLoaded", () => {
         return getLocalDateKey(prev);
     }
 
+    function getNextDateKey(dateKey) {
+        const [y, m, d] = dateKey.split("-").map(Number);
+        const next = new Date(y, m - 1, d + 1);
+        return getLocalDateKey(next);
+    }
+
     const now = new Date();
     const todayKey = getLocalDateKey(now);
-    currentDateEl.innerText = now.toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' });
+    let selectedDateKey = todayKey;
 
     // --- 3. DYNAMIC STUDY PLAN RESOLUTION ---
     function resolvePlan(dateKey) {
@@ -351,61 +362,41 @@ document.addEventListener("DOMContentLoaded", () => {
         };
     }
 
-    const todayPlan = resolvePlan(todayKey);
-    const prevKey = getPreviousDateKey(todayKey);
-    const prevPlan = STUDY_PLAN[prevKey];
-
-    // Populate Dynamic Task Labels
-    if (dsaNameEl) dsaNameEl.innerText = todayPlan.dsa;
-    if (coreNameEl) coreNameEl.innerText = todayPlan.core;
-    if (planTagEl) planTagEl.innerText = todayPlan.tag;
-
-    // Set Quick Resource Links on Checklist items
-    if (dsaQuickLink && todayPlan.dsaLinks && todayPlan.dsaLinks.length > 0) {
-        dsaQuickLink.href = todayPlan.dsaLinks[0].url;
-        dsaQuickLink.title = `Practice ${todayPlan.dsa} on ${todayPlan.dsaLinks[0].title}`;
-    }
-    if (coreQuickLink && todayPlan.coreLinks && todayPlan.coreLinks.length > 0) {
-        coreQuickLink.href = todayPlan.coreLinks[0].url;
-        coreQuickLink.title = `Study ${todayPlan.core} on ${todayPlan.coreLinks[0].title}`;
-    }
-
-    // Determine Topic Repetition / Continuity
-    const isContinuedDsa = Boolean(prevPlan && prevPlan.dsa === todayPlan.dsa);
-    if (dsaModeBadge) {
-        if (isContinuedDsa) {
-            dsaModeBadge.innerText = "Continued Practice";
-            dsaModeBadge.className = "task-mode-badge";
-        } else {
-            dsaModeBadge.innerText = "New Topic";
-            dsaModeBadge.className = "task-mode-badge new";
+    // --- 4. TASK UI STATE SYNC ---
+    function updateTaskRowState(id, isChecked) {
+        const row = document.getElementById(`item-${id}`);
+        if (row) {
+            if (isChecked) {
+                row.classList.add("checked");
+            } else {
+                row.classList.remove("checked");
+            }
         }
     }
 
-    if (coreModeBadge) {
-        const isContinuedCore = Boolean(prevPlan && prevPlan.core === todayPlan.core);
-        coreModeBadge.innerText = isContinuedCore ? "Continued Subject" : "Core Subject";
-    }
+    // --- 5. POPULATE & CONTROL SOURCES MODAL ---
+    function renderModalSources(dateKey) {
+        const plan = resolvePlan(dateKey);
+        const [y, m, d] = dateKey.split("-").map(Number);
+        const dateObj = new Date(y, m - 1, d);
 
-    // --- 4. POPULATE & CONTROL SOURCES MODAL ---
-    function renderModalSources() {
         if (modalPlanDay) {
-            modalPlanDay.innerText = `DAY ${todayPlan.dayIndex} OF 21 • ${todayPlan.tag.toUpperCase()}`;
+            modalPlanDay.innerText = `DAY ${plan.dayIndex} OF 21 • ${dateObj.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }).toUpperCase()}`;
         }
         if (modalTitle) {
-            modalTitle.innerText = `${todayPlan.dsa} & ${todayPlan.core} Sources`;
+            modalTitle.innerText = `${plan.dsa} & ${plan.core} Sources`;
         }
         if (modalDsaTopic) {
-            modalDsaTopic.innerText = todayPlan.dsa;
+            modalDsaTopic.innerText = plan.dsa;
         }
         if (modalCoreTopic) {
-            modalCoreTopic.innerText = todayPlan.core;
+            modalCoreTopic.innerText = plan.core;
         }
 
         // Render DSA Links
         if (modalDsaLinks) {
             modalDsaLinks.innerHTML = "";
-            (todayPlan.dsaLinks || []).forEach(link => {
+            (plan.dsaLinks || []).forEach(link => {
                 const a = document.createElement("a");
                 a.className = "source-link-item";
                 a.href = link.url;
@@ -422,7 +413,7 @@ document.addEventListener("DOMContentLoaded", () => {
         // Render Core CS Links
         if (modalCoreLinks) {
             modalCoreLinks.innerHTML = "";
-            (todayPlan.coreLinks || []).forEach(link => {
+            (plan.coreLinks || []).forEach(link => {
                 const a = document.createElement("a");
                 a.className = "source-link-item";
                 a.href = link.url;
@@ -437,12 +428,9 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     }
 
-    // Render modal content immediately
-    renderModalSources();
-
     if (todaySourcesBtn && sourcesModal && closeModalBtn) {
         todaySourcesBtn.addEventListener("click", () => {
-            renderModalSources();
+            renderModalSources(selectedDateKey);
             sourcesModal.classList.remove("hidden");
         });
 
@@ -457,94 +445,219 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
-    // --- 5. TASK UI STATE SYNC ---
-    function updateTaskRowState(id, isChecked) {
-        const row = document.getElementById(`item-${id}`);
-        if (row) {
-            if (isChecked) {
-                row.classList.add("checked");
+    // --- 6. RENDER DAY VIEW (CURRENT, PAST, OR FUTURE) ---
+    function renderDayView(dateKey) {
+        selectedDateKey = dateKey;
+        const [y, m, d] = dateKey.split("-").map(Number);
+        const dateObj = new Date(y, m - 1, d);
+        const history = getHistory();
+        const plan = resolvePlan(dateKey);
+        const prevKey = getPreviousDateKey(dateKey);
+        const prevPlan = STUDY_PLAN[prevKey];
+
+        // 1. Update Date Header
+        if (currentDateEl) {
+            currentDateEl.innerText = dateObj.toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' });
+        }
+
+        // 2. Navigation & Button State
+        if (dateKey === todayKey) {
+            if (jumpTodayBtn) jumpTodayBtn.classList.add("hidden");
+            if (saveBtn) {
+                saveBtn.innerText = "COMPLETE DAY";
+                saveBtn.disabled = false;
+                saveBtn.title = "Log completion for today";
+            }
+            if (todaySourcesBtn) todaySourcesBtn.innerText = "SOURCES FOR TODAY ↗";
+            if (planTagEl) planTagEl.innerText = plan.tag;
+        } else if (dateKey < todayKey) {
+            if (jumpTodayBtn) {
+                jumpTodayBtn.classList.remove("hidden");
+                jumpTodayBtn.innerText = "Today ↩";
+            }
+            if (saveBtn) {
+                const isAlreadySuccess = history[dateKey] === "SUCCESS";
+                saveBtn.innerText = isAlreadySuccess ? "UPDATE PAST DAY" : "RECOVER PAST DAY";
+                saveBtn.disabled = false;
+                saveBtn.title = "Revisit and complete missed work for this day";
+            }
+            if (todaySourcesBtn) todaySourcesBtn.innerText = "SOURCES FOR THIS DAY ↗";
+            if (planTagEl) planTagEl.innerText = `Revisiting Past Day • Day ${plan.dayIndex || ''} (${plan.dsa})`;
+        } else {
+            // Future Day
+            if (jumpTodayBtn) {
+                jumpTodayBtn.classList.remove("hidden");
+                jumpTodayBtn.innerText = "Today ↩";
+            }
+            if (saveBtn) {
+                saveBtn.innerText = "FUTURE DAY (LOCKED)";
+                saveBtn.disabled = true;
+                saveBtn.title = "You cannot complete future days in advance";
+            }
+            if (todaySourcesBtn) todaySourcesBtn.innerText = "PREVIEW SOURCES ↗";
+            if (planTagEl) planTagEl.innerText = `Previewing Upcoming Day • Day ${plan.dayIndex || ''} (${plan.dsa})`;
+        }
+
+        // 3. Task Topic Labels
+        if (dsaNameEl) dsaNameEl.innerText = plan.dsa;
+        if (coreNameEl) coreNameEl.innerText = plan.core;
+
+        // 4. Quick Links
+        if (dsaQuickLink && plan.dsaLinks && plan.dsaLinks.length > 0) {
+            dsaQuickLink.href = plan.dsaLinks[0].url;
+            dsaQuickLink.title = `Practice ${plan.dsa} on ${plan.dsaLinks[0].title}`;
+        }
+        if (coreQuickLink && plan.coreLinks && plan.coreLinks.length > 0) {
+            coreQuickLink.href = plan.coreLinks[0].url;
+            coreQuickLink.title = `Study ${plan.core} on ${plan.coreLinks[0].title}`;
+        }
+
+        // 5. Topic Continuity Badges
+        const isContinuedDsa = Boolean(prevPlan && prevPlan.dsa === plan.dsa);
+        if (dsaModeBadge) {
+            if (isContinuedDsa) {
+                dsaModeBadge.innerText = "Continued Practice";
+                dsaModeBadge.className = "task-mode-badge";
             } else {
-                row.classList.remove("checked");
+                dsaModeBadge.innerText = "New Topic";
+                dsaModeBadge.className = "task-mode-badge new";
             }
         }
-    }
+        if (coreModeBadge) {
+            const isContinuedCore = Boolean(prevPlan && prevPlan.core === plan.core);
+            coreModeBadge.innerText = isContinuedCore ? "Continued Subject" : "Core Subject";
+        }
 
-    // --- 6. LOCAL STORAGE RESET & RESTORE LOGIC ---
-    const lastVisitKey = localStorage.getItem("mission_last_visit");
+        // 6. Checkbox States & Status Badge
+        const isFuture = dateKey > todayKey;
+        const isCompletedInHistory = history[dateKey] === "SUCCESS";
 
-    if (lastVisitKey !== todayKey) {
-        // NEW DAY DETECTED
         TASK_IDS.forEach(id => {
-            localStorage.setItem(`${todayKey}_${id}`, "false");
-            localStorage.setItem(id, "false");
             const el = document.getElementById(id);
             if (el) {
-                el.checked = false;
-                updateTaskRowState(id, false);
+                el.disabled = isFuture;
+                if (isFuture) {
+                    el.checked = false;
+                    updateTaskRowState(id, false);
+                } else {
+                    const storedVal = localStorage.getItem(`${dateKey}_${id}`);
+                    const isChecked = storedVal !== null ? (storedVal === "true") : isCompletedInHistory;
+                    el.checked = isChecked;
+                    updateTaskRowState(id, isChecked);
+                }
             }
         });
 
+        // 7. Status Badge Text
+        if (isFuture) {
+            updateStatusBadge("UPCOMING");
+        } else if (history[dateKey]) {
+            updateStatusBadge(history[dateKey]);
+        } else if (dateKey < todayKey) {
+            updateStatusBadge("MISSED");
+        } else {
+            updateStatusBadge("PENDING");
+        }
+
+        // 8. Update Selected Day in Calendar Grid
+        updateCalendarSelection(dateKey);
+    }
+
+    function updateCalendarSelection(dateKey) {
+        const allBoxes = document.querySelectorAll(".day-box");
+        allBoxes.forEach(box => {
+            if (box.dataset.dateKey === dateKey) {
+                box.classList.add("selected");
+            } else {
+                box.classList.remove("selected");
+            }
+        });
+    }
+
+    // --- 7. LOCAL STORAGE RESET (MIDNIGHT CHECK) ---
+    const lastVisitKey = localStorage.getItem("mission_last_visit");
+
+    if (lastVisitKey !== todayKey) {
         // Auto-fail previous unlogged visit
         if (lastVisitKey) {
             checkAndAutoFailPreviousDay(lastVisitKey);
         }
-
         localStorage.setItem("mission_last_visit", todayKey);
-        updateStatusBadge("PENDING");
-    } else {
-        // SAME DAY: RESTORE CHECKED STATE
-        TASK_IDS.forEach(id => {
-            const isChecked = (localStorage.getItem(`${todayKey}_${id}`) ?? localStorage.getItem(id)) === "true";
-            const el = document.getElementById(id);
-            if (el) {
-                el.checked = isChecked;
-                updateTaskRowState(id, isChecked);
-            }
-        });
-
-        const history = getHistory();
-        if (history[todayKey]) {
-            updateStatusBadge(history[todayKey]);
-        }
     }
 
-    // --- 7. EVENT LISTENERS ---
+    // --- 8. EVENT LISTENERS ---
+    // Checkbox toggles
     TASK_IDS.forEach(id => {
         const el = document.getElementById(id);
         if (el) {
             el.addEventListener("change", (e) => {
                 const checked = e.target.checked;
-                localStorage.setItem(`${todayKey}_${id}`, String(checked));
-                localStorage.setItem(id, String(checked));
+                localStorage.setItem(`${selectedDateKey}_${id}`, String(checked));
+                if (selectedDateKey === todayKey) {
+                    localStorage.setItem(id, String(checked));
+                }
                 updateTaskRowState(id, checked);
             });
         }
     });
 
+    // Date Navigation Buttons
+    if (prevDayBtn) {
+        prevDayBtn.addEventListener("click", () => {
+            renderDayView(getPreviousDateKey(selectedDateKey));
+        });
+    }
+
+    if (nextDayBtn) {
+        nextDayBtn.addEventListener("click", () => {
+            renderDayView(getNextDateKey(selectedDateKey));
+        });
+    }
+
+    if (jumpTodayBtn) {
+        jumpTodayBtn.addEventListener("click", () => {
+            renderDayView(todayKey);
+        });
+    }
+
+    // Save / Complete Day Button
     if (saveBtn) {
         saveBtn.addEventListener("click", () => {
+            if (selectedDateKey > todayKey) return;
+
             const allChecked = TASK_IDS.every(id => {
                 const el = document.getElementById(id);
                 return el && el.checked;
             });
             const status = allChecked ? "SUCCESS" : "FAILED";
-
             const history = getHistory();
-            history[todayKey] = status;
+            history[selectedDateKey] = status;
             localStorage.setItem("mission_history", JSON.stringify(history));
 
             updateStatusBadge(status);
             renderCalendar();
 
-            if (allChecked) {
-                alert(`✅ Mission Accomplished!\n\nBoth today's DSA (${todayPlan.dsa}) and Core Subject (${todayPlan.core}) are completed. Keep up the consistency!`);
+            const plan = resolvePlan(selectedDateKey);
+            const [y, m, d] = selectedDateKey.split("-").map(Number);
+            const selectedDate = new Date(y, m - 1, d);
+
+            if (selectedDateKey === todayKey) {
+                if (allChecked) {
+                    alert(`✅ Mission Accomplished!\n\nBoth today's DSA (${plan.dsa}) and Core Subject (${plan.core}) are completed. Keep up the consistency!`);
+                } else {
+                    alert("❌ Day Logged as Incomplete.\n\nMake sure to complete both the DSA topic and Core Subject before the day ends.");
+                }
             } else {
-                alert("❌ Day Logged as Incomplete.\n\nMake sure to complete both the DSA topic and Core Subject before the day ends.");
+                if (allChecked) {
+                    alert(`✅ Past Day Recovered!\n\n${selectedDate.toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' })} has been successfully completed and marked green in your history! Working harder pays off.`);
+                } else {
+                    alert(`⚠️ Past Day Updated as Incomplete.\n\nCheck off both tasks to recover this day into a successful green streak.`);
+                }
             }
         });
     }
 
-    // --- 8. CALENDAR RENDERER (WITH MONTH SEPARATORS & PLAN TOOLTIPS) ---
+    // --- 9. CALENDAR RENDERER (CLICKABLE DAYS FOR REVISITING) ---
     function renderCalendar() {
         const grid = document.getElementById("calendar-grid");
         if (!grid) return;
@@ -573,19 +686,25 @@ document.addEventListener("DOMContentLoaded", () => {
             const dayEl = document.createElement("div");
             dayEl.classList.add("day-box");
             dayEl.innerText = dayNum;
+            dayEl.dataset.dateKey = dKey;
 
             // Study Plan Annotation
             if (STUDY_PLAN[dKey]) {
                 const sp = STUDY_PLAN[dKey];
-                dayEl.title = `${d.toDateString()} (Day ${sp.dayIndex} of 21)\nDSA: ${sp.dsa}\nCore: ${sp.core}`;
+                dayEl.title = `${d.toDateString()} (Day ${sp.dayIndex} of 21)\nDSA: ${sp.dsa}\nCore: ${sp.core}\n\nClick to revisit and complete tasks.`;
                 dayEl.classList.add("has-plan");
             } else {
-                dayEl.title = d.toDateString();
+                dayEl.title = `${d.toDateString()}\nClick to view.`;
             }
 
             // Mark Today
             if (dKey === todayKey) {
                 dayEl.classList.add("today");
+            }
+
+            // Mark Selected
+            if (dKey === selectedDateKey) {
+                dayEl.classList.add("selected");
             }
 
             // Apply History Status
@@ -594,6 +713,11 @@ document.addEventListener("DOMContentLoaded", () => {
             } else if (history[dKey] === "FAILED") {
                 dayEl.classList.add("failed");
             }
+
+            // Clickable Day Box to Revisit
+            dayEl.addEventListener("click", () => {
+                renderDayView(dKey);
+            });
 
             grid.appendChild(dayEl);
         }
@@ -604,7 +728,7 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
-    // --- 9. HELPER FUNCTIONS ---
+    // --- 10. HELPER FUNCTIONS ---
     function getHistory() {
         return JSON.parse(localStorage.getItem("mission_history") || "{}");
     }
@@ -614,7 +738,7 @@ document.addEventListener("DOMContentLoaded", () => {
         statusBadge.innerText = status;
         if (status === "SUCCESS") {
             statusBadge.style.color = "var(--accent-green)";
-        } else if (status === "FAILED") {
+        } else if (status === "FAILED" || status === "MISSED") {
             statusBadge.style.color = "var(--accent-red)";
         } else {
             statusBadge.style.color = "var(--text-muted)";
@@ -629,6 +753,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     }
 
-    // Initial Calendar Render
+    // --- 11. INITIAL RENDER ---
     renderCalendar();
+    renderDayView(todayKey);
 });
