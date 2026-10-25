@@ -756,6 +756,36 @@ label {
     color: var(--text-main);
 }
 
+.sync-banner {
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+    background: rgba(52, 199, 89, 0.08);
+    border: 1px solid rgba(52, 199, 89, 0.25);
+    border-radius: 8px;
+    padding: 12px 14px;
+    margin-bottom: 16px;
+    font-size: 0.8rem;
+    line-height: 1.45;
+}
+
+.sync-banner-icon {
+    font-size: 1.15rem;
+    line-height: 1;
+}
+
+.sync-banner strong {
+    color: var(--accent-green);
+    display: block;
+    margin-bottom: 3px;
+    font-size: 0.82rem;
+}
+
+.sync-banner p {
+    margin: 0;
+    color: var(--text-muted);
+}
+
 .sync-input-group {
     display: flex;
     flex-direction: column;

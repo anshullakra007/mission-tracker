@@ -148,9 +148,13 @@
             </div>
 
             <div class="sync-modal-body">
-                <p class="sync-desc">
-                    Sync your checklist and streaks between your <strong>Phone</strong> and <strong>Laptop</strong>. Enter your personal Sync Key on both devices:
-                </p>
+                <div class="sync-banner">
+                    <span class="sync-banner-icon">⚡</span>
+                    <div>
+                        <strong>100% Automatic Real-Time Sync</strong>
+                        <p>No manual clicking needed! Any task or day you complete on your phone automatically syncs to your laptop in real-time within seconds.</p>
+                    </div>
+                </div>
 
                 <div class="sync-input-group">
                     <label for="sync-key-input">Personal Sync Key:</label>
@@ -158,26 +162,26 @@
                         <input type="text" id="sync-key-input" placeholder="e.g. anshul-mission" autocomplete="off" spellcheck="false">
                         <button id="generate-sync-key-btn" class="sync-action-btn secondary" type="button" title="Generate random key">Random Key</button>
                     </div>
-                    <span class="sync-hint">Choose any unique phrase or name. Use this exact key on your phone and laptop.</span>
+                    <span class="sync-hint">Enter the exact same Sync Key on both your Phone and Laptop to keep them paired automatically.</span>
                 </div>
 
                 <div class="sync-status-card" id="sync-status-card">
                     <div class="sync-card-row">
-                        <span class="sync-label">Status:</span>
+                        <span class="sync-label">Auto-Sync Status:</span>
                         <span class="sync-value" id="modal-sync-status">Not Connected (Local Only)</span>
                     </div>
                     <div class="sync-card-row">
-                        <span class="sync-label">Active Key:</span>
+                        <span class="sync-label">Paired Key:</span>
                         <span class="sync-value" id="modal-active-key">—</span>
                     </div>
                     <div class="sync-card-row">
-                        <span class="sync-label">Last Cloud Sync:</span>
+                        <span class="sync-label">Last Auto-Sync:</span>
                         <span class="sync-value" id="modal-sync-time">—</span>
                     </div>
                 </div>
 
                 <div class="sync-modal-actions">
-                    <button id="connect-sync-btn" class="action-btn sync-primary-btn">CONNECT &amp; SYNC NOW</button>
+                    <button id="connect-sync-btn" class="action-btn sync-primary-btn">CONNECT AUTO-SYNC</button>
                     <button id="disconnect-sync-btn" class="sync-action-btn danger hidden">Disconnect</button>
                 </div>
             </div>

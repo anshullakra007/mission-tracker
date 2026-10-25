@@ -1,7 +1,11 @@
 module.exports = async (req, res) => {
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
-  res.setHeader("Access-Control-Allow-Headers", "Content-Type");
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type, Cache-Control, Pragma");
+  res.setHeader("Cache-Control", "no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0");
+  res.setHeader("Pragma", "no-cache");
+  res.setHeader("Expires", "0");
+  res.setHeader("Surrogate-Control", "no-store");
 
   if (req.method === "OPTIONS") {
     return res.status(200).end();
@@ -21,12 +25,14 @@ module.exports = async (req, res) => {
     }
     const syncKey = rawKey.trim().toLowerCase();
 
-    // 1. Fetch current Gist content
-    const gistRes = await fetch(`https://api.github.com/gists/${gistId}`, {
+    // 1. Fetch current Gist content (always fresh, no cache)
+    const gistRes = await fetch(`https://api.github.com/gists/${gistId}?_t=${Date.now()}`, {
       headers: {
         Authorization: `Bearer ${token}`,
-        "User-Agent": "MissionTracker-Sync"
-      }
+        "User-Agent": "MissionTracker-Sync",
+        "Cache-Control": "no-cache"
+      },
+      cache: "no-store"
     });
 
     if (!gistRes.ok) {
@@ -66,19 +72,26 @@ module.exports = async (req, res) => {
       }
       const { history = {}, tasks = {}, updatedAt = Date.now() } = body || {};
       const existing = currentStore.rooms[syncKey] || { history: {}, tasks: {}, updatedAt: 0 };
+      const isNewer = updatedAt >= (existing.updatedAt || 0);
 
-      // Intelligent Merge
+      // Merge History: preserve SUCCESS completions, update if newer
       const mergedHistory = { ...existing.history };
       for (const [date, status] of Object.entries(history)) {
-        if (status === "SUCCESS" || !mergedHistory[date]) {
+        if (status === "SUCCESS" || !mergedHistory[date] || isNewer) {
           mergedHistory[date] = status;
         }
       }
 
-      const mergedTasks = { ...existing.tasks };
-      for (const [tKey, isChecked] of Object.entries(tasks)) {
-        if (isChecked || mergedTasks[tKey] === undefined) {
-          mergedTasks[tKey] = isChecked;
+      // Merge Tasks: newer push takes precedence for boolean states (checked or unchecked)
+      let mergedTasks;
+      if (isNewer) {
+        mergedTasks = { ...existing.tasks, ...tasks };
+      } else {
+        mergedTasks = { ...existing.tasks };
+        for (const [tKey, isChecked] of Object.entries(tasks)) {
+          if (mergedTasks[tKey] === undefined) {
+            mergedTasks[tKey] = isChecked;
+          }
         }
       }
 

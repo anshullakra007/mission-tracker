@@ -610,8 +610,9 @@ document.addEventListener("DOMContentLoaded", () => {
                 if (selectedDateKey === todayKey) {
                     localStorage.setItem(id, String(checked));
                 }
+                localStorage.setItem("mission_last_edit_time", String(Date.now()));
                 updateTaskRowState(id, checked);
-                scheduleCloudPush();
+                scheduleCloudPush(120);
             });
         }
     });
@@ -648,10 +649,11 @@ document.addEventListener("DOMContentLoaded", () => {
             const history = getHistory();
             history[selectedDateKey] = status;
             localStorage.setItem("mission_history", JSON.stringify(history));
+            localStorage.setItem("mission_last_edit_time", String(Date.now()));
 
             updateStatusBadge(status);
             renderCalendar();
-            scheduleCloudPush();
+            scheduleCloudPush(0);
 
             const plan = resolvePlan(selectedDateKey);
             const [y, m, d] = selectedDateKey.split("-").map(Number);
@@ -771,6 +773,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // --- 11. REAL-TIME CLOUD SYNC ENGINE ---
     let syncPushTimer = null;
+    let isPushing = false;
+    let pendingPush = false;
+    let isPulling = false;
 
     function getActiveSyncKey() {
         return (localStorage.getItem("mission_sync_key") || "").trim().toLowerCase();
@@ -802,18 +807,18 @@ document.addEventListener("DOMContentLoaded", () => {
             if (headerSyncDot) headerSyncDot.className = "sync-status-dot syncing";
             if (headerSyncText) headerSyncText.innerText = "SYNCING...";
             if (modalSyncStatus) {
-                modalSyncStatus.innerText = "Syncing with cloud...";
+                modalSyncStatus.innerText = "Syncing with cloud in real-time...";
                 modalSyncStatus.style.color = "#38bdf8";
             }
         } else if (state === "connected" || activeKey) {
             if (headerSyncDot) headerSyncDot.className = "sync-status-dot active";
-            if (headerSyncText) headerSyncText.innerText = `SYNCED`;
+            if (headerSyncText) headerSyncText.innerText = `AUTO-SYNC ON`;
             if (modalSyncStatus) {
-                modalSyncStatus.innerText = text || `Connected (${activeKey})`;
+                modalSyncStatus.innerText = text || `⚡ Auto-Sync Active (${activeKey})`;
                 modalSyncStatus.style.color = "var(--accent-green)";
             }
             if (disconnectSyncBtn) disconnectSyncBtn.classList.remove("hidden");
-            if (connectSyncBtn) connectSyncBtn.innerText = "SYNC NOW";
+            if (connectSyncBtn) connectSyncBtn.innerText = "FORCE REFRESH NOW";
             if (syncKeyInput && !syncKeyInput.value) syncKeyInput.value = activeKey;
         } else {
             if (headerSyncDot) headerSyncDot.className = "sync-status-dot";
@@ -823,24 +828,33 @@ document.addEventListener("DOMContentLoaded", () => {
                 modalSyncStatus.style.color = "var(--text-muted)";
             }
             if (disconnectSyncBtn) disconnectSyncBtn.classList.add("hidden");
-            if (connectSyncBtn) connectSyncBtn.innerText = "CONNECT & SYNC NOW";
+            if (connectSyncBtn) connectSyncBtn.innerText = "CONNECT AUTO-SYNC";
         }
     }
 
     async function pushToCloud() {
         const syncKey = getActiveSyncKey();
         if (!syncKey) return;
-
+        if (isPushing) {
+            pendingPush = true;
+            return;
+        }
+        isPushing = true;
         updateSyncUI("syncing");
+
         try {
+            const nowTime = Date.now();
             const res = await fetch("/api/sync", {
                 method: "POST",
-                headers: { "Content-Type": "application/json" },
+                headers: { 
+                    "Content-Type": "application/json",
+                    "Cache-Control": "no-cache"
+                },
                 body: JSON.stringify({
                     key: syncKey,
                     history: getHistory(),
                     tasks: collectAllTaskStates(),
-                    updatedAt: Date.now()
+                    updatedAt: nowTime
                 })
             });
 
@@ -850,23 +864,36 @@ document.addEventListener("DOMContentLoaded", () => {
                     mergeCloudDataIntoLocalStorage(json.data);
                 }
                 localStorage.setItem("mission_last_sync_time", String(Date.now()));
-                updateSyncUI("connected", "Synced just now");
+                updateSyncUI("connected", "Auto-synced just now");
             } else {
-                updateSyncUI("connected", "Sync failed (retrying)");
+                updateSyncUI("connected", "Sync retrying...");
             }
         } catch (err) {
             console.warn("Cloud push error:", err);
             updateSyncUI("connected", "Offline (will retry)");
+        } finally {
+            isPushing = false;
+            if (pendingPush) {
+                pendingPush = false;
+                scheduleCloudPush(100);
+            }
         }
     }
 
     async function pullFromCloud(isSilent = false) {
         const syncKey = getActiveSyncKey();
         if (!syncKey) return;
+        if (isPulling || isPushing) return;
 
+        isPulling = true;
         if (!isSilent) updateSyncUI("syncing");
+
         try {
-            const res = await fetch(`/api/sync?key=${encodeURIComponent(syncKey)}`);
+            const res = await fetch(`/api/sync?key=${encodeURIComponent(syncKey)}&_t=${Date.now()}`, {
+                cache: "no-store",
+                headers: { "Cache-Control": "no-cache, no-store" }
+            });
+
             if (res.ok) {
                 const json = await res.json();
                 if (json && json.data) {
@@ -877,10 +904,12 @@ document.addEventListener("DOMContentLoaded", () => {
                     }
                 }
                 localStorage.setItem("mission_last_sync_time", String(Date.now()));
-                updateSyncUI("connected", "Synced just now");
+                updateSyncUI("connected", "Auto-synced just now");
             }
         } catch (err) {
             if (!isSilent) console.warn("Cloud pull error:", err);
+        } finally {
+            isPulling = false;
         }
     }
 
@@ -888,28 +917,49 @@ document.addEventListener("DOMContentLoaded", () => {
         if (!cloudData) return false;
         let changed = false;
 
-        // Merge History
+        const lastLocalEdit = Number(localStorage.getItem("mission_last_edit_time") || "0");
+        const cloudUpdatedAt = Number(cloudData.updatedAt || "0");
+        const isCloudNewer = cloudUpdatedAt >= lastLocalEdit;
+
+        // 1. Merge History
         if (cloudData.history) {
             const localHistory = getHistory();
             for (const [date, status] of Object.entries(cloudData.history)) {
                 if (localHistory[date] !== status) {
-                    // Favor SUCCESS
-                    if (status === "SUCCESS" || !localHistory[date]) {
+                    if (status === "SUCCESS" || !localHistory[date] || isCloudNewer) {
                         localHistory[date] = status;
                         changed = true;
                     }
                 }
             }
-            localStorage.setItem("mission_history", JSON.stringify(localHistory));
+            if (changed) {
+                localStorage.setItem("mission_history", JSON.stringify(localHistory));
+            }
         }
 
-        // Merge Tasks
+        // 2. Merge Tasks (both check and uncheck states)
         if (cloudData.tasks) {
             for (const [tKey, isChecked] of Object.entries(cloudData.tasks)) {
                 const localVal = localStorage.getItem(tKey);
-                if (isChecked && localVal !== "true") {
-                    localStorage.setItem(tKey, "true");
-                    changed = true;
+                const localBool = localVal === "true";
+                const targetBool = Boolean(isChecked);
+
+                if (isCloudNewer || localVal === null) {
+                    if (localVal === null || localBool !== targetBool) {
+                        localStorage.setItem(tKey, String(targetBool));
+                        changed = true;
+
+                        // Keep today's alias keys aligned
+                        if (tKey === `task-dsa`) {
+                            localStorage.setItem(`${todayKey}_task-dsa`, String(targetBool));
+                        } else if (tKey === `task-core`) {
+                            localStorage.setItem(`${todayKey}_task-core`, String(targetBool));
+                        } else if (tKey === `${todayKey}_task-dsa`) {
+                            localStorage.setItem(`task-dsa`, String(targetBool));
+                        } else if (tKey === `${todayKey}_task-core`) {
+                            localStorage.setItem(`task-core`, String(targetBool));
+                        }
+                    }
                 }
             }
         }
@@ -917,12 +967,12 @@ document.addEventListener("DOMContentLoaded", () => {
         return changed;
     }
 
-    function scheduleCloudPush() {
+    function scheduleCloudPush(delay = 120) {
         if (!getActiveSyncKey()) return;
         if (syncPushTimer) clearTimeout(syncPushTimer);
         syncPushTimer = setTimeout(() => {
             pushToCloud();
-        }, 400);
+        }, delay);
     }
 
     // Modal Events
@@ -960,18 +1010,22 @@ document.addEventListener("DOMContentLoaded", () => {
             localStorage.setItem("mission_sync_key", raw);
             connectSyncBtn.disabled = true;
             connectSyncBtn.innerText = "CONNECTING...";
+
+            // Pull cloud data FIRST so this device adopts any existing progress
+            await pullFromCloud(false);
+            // Then push so both device sets are unified
             await pushToCloud();
-            await pullFromCloud();
+
             connectSyncBtn.disabled = false;
-            connectSyncBtn.innerText = "SYNC NOW";
-            updateSyncUI("connected", "Connected & Synced!");
-            alert(`✅ Cloud Sync Connected!\n\nYour Sync Key is: "${raw}"\n\nEnter this exact key on your phone to keep your checklist and streaks automatically in sync!`);
+            connectSyncBtn.innerText = "FORCE REFRESH NOW";
+            updateSyncUI("connected", "Auto-Sync Active");
+            alert(`✅ Real-Time Cloud Sync Connected!\n\nYour Sync Key is: "${raw}"\n\nEnter this exact key on your phone. Any task you check on your phone or laptop will now sync automatically in real-time — no buttons needed!`);
         });
     }
 
     if (disconnectSyncBtn) {
         disconnectSyncBtn.addEventListener("click", () => {
-            if (confirm("Disconnect cloud sync on this device? Your local progress will remain.")) {
+            if (confirm("Disconnect auto-sync on this device? Your local progress will remain.")) {
                 localStorage.removeItem("mission_sync_key");
                 updateSyncUI("disconnected");
                 if (syncKeyInput) syncKeyInput.value = "";
@@ -979,25 +1033,47 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
-    // Focus / Visibility Listener: auto-syncs when switching from phone to laptop
-    window.addEventListener("focus", () => {
-        pullFromCloud(true);
-    });
-
-    document.addEventListener("visibilitychange", () => {
-        if (!document.hidden) {
-            pullFromCloud(true);
-        }
-    });
-
-    // Periodic Background Sync (every 30s)
+    // Real-Time Background Auto-Sync Loop (every 3.5 seconds while tab is open)
     setInterval(() => {
-        if (!document.hidden) {
+        if (!document.hidden && getActiveSyncKey()) {
             pullFromCloud(true);
         }
-    }, 30000);
+    }, 3500);
 
-    // --- 12. INITIAL RENDER & AUTO-SYNC ---
+    // Instant pull on window focus (desktop & laptop)
+    window.addEventListener("focus", () => {
+        if (getActiveSyncKey()) pullFromCloud(true);
+    });
+
+    // Instant pull on tab visibility change (switching apps or unlocking phone)
+    document.addEventListener("visibilitychange", () => {
+        if (!document.hidden && getActiveSyncKey()) {
+            pullFromCloud(true);
+        }
+    });
+
+    // Instant pull on mobile pageshow (iOS Safari & Chrome app wake)
+    window.addEventListener("pageshow", () => {
+        if (getActiveSyncKey()) pullFromCloud(true);
+    });
+
+    // Auto-sync on device network reconnect
+    window.addEventListener("online", () => {
+        if (getActiveSyncKey()) {
+            pullFromCloud(true);
+            pushToCloud();
+        }
+    });
+
+    // Flush any pending push when closing or switching away
+    window.addEventListener("pagehide", () => {
+        if (syncPushTimer) {
+            clearTimeout(syncPushTimer);
+            pushToCloud();
+        }
+    });
+
+    // --- 12. INITIAL RENDER & IMMEDIATE AUTO-SYNC ---
     renderCalendar();
     renderDayView(todayKey);
     updateSyncUI();
