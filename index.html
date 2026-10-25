@@ -22,31 +22,39 @@
             
             <section class="mission-control">
                 <div class="date-header">
-                    <span id="current-date"></span>
+                    <div class="date-info">
+                        <span id="current-date"></span>
+                        <span class="plan-tag" id="plan-tag">Study Plan: Day 1 of 21</span>
+                    </div>
                     <span class="status-badge" id="daily-status">Pending</span>
                 </div>
                 
                 <div class="checklist">
-                    <div class="task-item">
-                        <input type="checkbox" id="task-tuf">
-                        <label for="task-tuf">
-                            <span class="task-name">DSA (10)</span>
+                    <div class="task-item" id="item-task-dsa">
+                        <input type="checkbox" id="task-dsa">
+                        <label for="task-dsa">
+                            <div class="task-category">
+                                <span>DSA Topic</span>
+                                <span class="task-mode-badge" id="dsa-mode-badge">New Topic</span>
+                            </div>
+                            <span class="task-name" id="task-dsa-name">2D Arrays</span>
                         </label>
                     </div>
 
-                    <div class="task-item">
-                        <input type="checkbox" id="task-cp31">
-                        <label for="task-cp31">
-                            <span class="task-name">CP (5)</span>
+                    <div class="task-item" id="item-task-core">
+                        <input type="checkbox" id="task-core">
+                        <label for="task-core">
+                            <div class="task-category">
+                                <span>Core CS / Other Subject</span>
+                                <span class="task-mode-badge core" id="core-mode-badge">Core Subject</span>
+                            </div>
+                            <span class="task-name" id="task-core-name">DBMS</span>
                         </label>
                     </div>
+                </div>
 
-                    <div class="task-item">
-                        <input type="checkbox" id="task-vc">
-                        <label for="task-vc">
-                            <span class="task-name">V.C.</span>
-                        </label>
-                    </div>
+                <div class="protocol-note">
+                    <strong>Rule:</strong> Complete the day's DSA topic & core subject, practice problems or revise concepts, and log completion before midnight.
                 </div>
 
                 <button id="save-btn" class="action-btn">COMPLETE DAY</button>
@@ -59,6 +67,7 @@
                     <div class="legend-item"><span class="dot red"></span> Missed</div>
                     <div class="legend-item"><span class="dot green"></span> Completed</div>
                     <div class="legend-item"><span class="dot gray"></span> Pending</div>
+                    <div class="legend-item"><span class="dot blue"></span> Study Plan</div>
                 </div>
             </section>
 
