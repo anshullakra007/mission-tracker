@@ -15,7 +15,7 @@
                 <h1>MISSION</h1>
                 <p class="subtitle">Discipline > Motivation</p>
             </div>
-            <button id="view-profile-btn" class="action-btn header-btn">VIEW PROFILE</button>
+            <button id="today-sources-btn" class="action-btn header-btn">SOURCES FOR TODAY ↗</button>
         </header>
 
         <div class="main-content">
@@ -35,7 +35,10 @@
                         <label for="task-dsa">
                             <div class="task-category">
                                 <span>DSA Topic</span>
-                                <span class="task-mode-badge" id="dsa-mode-badge">New Topic</span>
+                                <div class="task-category-actions">
+                                    <span class="task-mode-badge" id="dsa-mode-badge">New Topic</span>
+                                    <a id="dsa-quick-link" href="#" target="_blank" rel="noopener noreferrer" class="quick-source-link" onclick="event.stopPropagation()">Practice ↗</a>
+                                </div>
                             </div>
                             <span class="task-name" id="task-dsa-name">2D Arrays</span>
                         </label>
@@ -46,7 +49,10 @@
                         <label for="task-core">
                             <div class="task-category">
                                 <span>Core CS / Other Subject</span>
-                                <span class="task-mode-badge core" id="core-mode-badge">Core Subject</span>
+                                <div class="task-category-actions">
+                                    <span class="task-mode-badge core" id="core-mode-badge">Core Subject</span>
+                                    <a id="core-quick-link" href="#" target="_blank" rel="noopener noreferrer" class="quick-source-link" onclick="event.stopPropagation()">Study ↗</a>
+                                </div>
                             </div>
                             <span class="task-name" id="task-core-name">DBMS</span>
                         </label>
@@ -75,10 +81,42 @@
 
     </div>
 
-    <div id="profile-modal" class="modal hidden">
-        <div class="modal-content">
-            <span id="close-modal-btn" class="close-btn">&times;</span>
-            <img src="profile.jpg" alt="Profile" class="profile-pic-large">
+    <!-- DAILY INTERVIEW SOURCES MODAL -->
+    <div id="sources-modal" class="modal hidden">
+        <div class="modal-content sources-modal-content">
+            <div class="modal-header">
+                <div>
+                    <span class="modal-subtitle" id="modal-plan-day">DAY 1 OF 21</span>
+                    <h2 class="modal-title" id="modal-title">Today's Interview Sources</h2>
+                </div>
+                <span id="close-modal-btn" class="close-btn" title="Close">&times;</span>
+            </div>
+            
+            <div class="sources-body">
+                <div class="source-card">
+                    <div class="source-card-header">
+                        <span class="source-category-tag dsa-tag">DSA INTERVIEW PRACTICE</span>
+                        <h3 class="source-topic-name" id="modal-dsa-topic">2D Arrays</h3>
+                    </div>
+                    <div class="source-links-list" id="modal-dsa-links">
+                        <!-- Populated by script.js -->
+                    </div>
+                </div>
+
+                <div class="source-card">
+                    <div class="source-card-header">
+                        <span class="source-category-tag core-tag">CORE CS / SUBJECT PREP</span>
+                        <h3 class="source-topic-name" id="modal-core-topic">DBMS</h3>
+                    </div>
+                    <div class="source-links-list" id="modal-core-links">
+                        <!-- Populated by script.js -->
+                    </div>
+                </div>
+            </div>
+
+            <div class="sources-modal-footer">
+                <span>💡 Complete standard problems and key conceptual questions before moving on.</span>
+            </div>
         </div>
     </div>
 
