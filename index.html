@@ -10,6 +10,9 @@
     <title>Mission | Daily Protocol</title>
     <link rel="icon" type="image/svg+xml" href="favicon.svg">
     <link rel="apple-touch-icon" href="favicon.svg">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Outfit:wght@600;700;800;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
@@ -37,27 +40,33 @@
             
             <section class="mission-control">
                 <div class="date-header">
-                    <div class="date-info">
-                        <div class="date-nav-row">
+                    <div class="date-main-bar">
+                        <div class="date-nav-cluster">
                             <button id="prev-day-btn" class="date-nav-btn" title="Previous day">&larr;</button>
                             <span id="current-date"></span>
                             <button id="next-day-btn" class="date-nav-btn" title="Next day">&rarr;</button>
                             <button id="jump-today-btn" class="jump-today-btn hidden" title="Return to today">Today ↩</button>
+                        </div>
+                        <span class="status-badge" id="daily-status">Pending</span>
+                    </div>
+
+                    <div class="curriculum-subbar">
+                        <div class="plan-info-group">
+                            <span class="plan-indicator-dot"></span>
+                            <span class="plan-tag" id="plan-tag">Study Plan: Day 1 of 21</span>
+                        </div>
+                        <div class="quick-jump-wrap">
+                            <label for="day-quick-select" class="quick-jump-label">Jump to:</label>
                             <select id="day-quick-select" class="day-quick-select" title="Jump to any Study Plan day">
-                                <option value="">Jump to Plan Day...</option>
+                                <option value="">Select Plan Day...</option>
                             </select>
                         </div>
-                        <span class="plan-tag" id="plan-tag">Study Plan: Day 1 of 21</span>
                     </div>
-                    <span class="status-badge" id="daily-status">Pending</span>
                 </div>
 
                 <div id="upcoming-preview-banner" class="upcoming-preview-banner hidden">
                     <span class="banner-icon">📅</span>
-                    <div class="banner-text">
-                        <strong>Upcoming Day Preview:</strong>
-                        <span id="upcoming-banner-desc">Scheduled work for this day. You can review topics, practice problems, or complete ahead.</span>
-                    </div>
+                    <span id="upcoming-banner-desc">Upcoming Schedule: Review topics &amp; sources below, or complete ahead.</span>
                 </div>
                 
                 <div class="checklist">

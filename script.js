@@ -476,7 +476,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // --- 5B. POPULATE & CONTROL ROADMAP MODAL ---
     function initDayQuickSelect() {
         if (!dayQuickSelect) return;
-        dayQuickSelect.innerHTML = '<option value="">Jump to Plan Day...</option>';
+        dayQuickSelect.innerHTML = '<option value="">Select Plan Day...</option>';
         const sortedPlanKeys = Object.keys(STUDY_PLAN).sort();
         sortedPlanKeys.forEach(dKey => {
             const plan = STUDY_PLAN[dKey];
@@ -485,7 +485,7 @@ document.addEventListener("DOMContentLoaded", () => {
             const dateStr = dateObj.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
             const opt = document.createElement("option");
             opt.value = dKey;
-            opt.innerText = `Day ${plan.dayIndex}: ${plan.dsa} & ${plan.core} (${dateStr})`;
+            opt.innerText = `Day ${plan.dayIndex} (${dateStr}): ${plan.dsa}`;
             dayQuickSelect.appendChild(opt);
         });
 
@@ -667,7 +667,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 saveBtn.title = "Log completion for today";
             }
             if (todaySourcesBtn) todaySourcesBtn.innerText = "SOURCES FOR TODAY ↗";
-            if (planTagEl) planTagEl.innerText = plan.tag;
+            if (planTagEl) planTagEl.innerText = `Day ${plan.dayIndex || '1'} of 21 • ${plan.dsa} & ${plan.core}`;
         } else if (isPast) {
             if (jumpTodayBtn) {
                 jumpTodayBtn.classList.remove("hidden");
@@ -681,7 +681,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 saveBtn.title = "Revisit and complete missed work for this day";
             }
             if (todaySourcesBtn) todaySourcesBtn.innerText = "SOURCES FOR THIS DAY ↗";
-            if (planTagEl) planTagEl.innerText = `Revisiting Past Day • Day ${plan.dayIndex || ''} (${plan.dsa})`;
+            if (planTagEl) planTagEl.innerText = `Day ${plan.dayIndex || ''} of 21 • ${plan.dsa} & ${plan.core}`;
         } else {
             // Future Day
             if (jumpTodayBtn) {
@@ -691,7 +691,7 @@ document.addEventListener("DOMContentLoaded", () => {
             if (upcomingPreviewBanner) {
                 upcomingPreviewBanner.classList.remove("hidden");
                 if (upcomingBannerDesc) {
-                    upcomingBannerDesc.innerText = `Scheduled work for ${dateObj.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}: ${plan.dsa} & ${plan.core}. You can explore interview sources or study ahead.`;
+                    upcomingBannerDesc.innerText = "Upcoming Schedule: Review topics & sources below, or mark completed early.";
                 }
             }
             if (saveBtn) {
@@ -701,7 +701,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 saveBtn.title = "Log early completion for this upcoming day";
             }
             if (todaySourcesBtn) todaySourcesBtn.innerText = "VIEW SOURCES FOR THIS DAY ↗";
-            if (planTagEl) planTagEl.innerText = `Upcoming • Day ${plan.dayIndex || ''} (${plan.dsa})`;
+            if (planTagEl) planTagEl.innerText = `Day ${plan.dayIndex || ''} of 21 • ${plan.dsa} & ${plan.core}`;
         }
 
         // 3. Task Topic Labels
