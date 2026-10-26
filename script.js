@@ -303,6 +303,9 @@ document.addEventListener("DOMContentLoaded", () => {
     const prevDayBtn = document.getElementById("prev-day-btn");
     const nextDayBtn = document.getElementById("next-day-btn");
     const jumpTodayBtn = document.getElementById("jump-today-btn");
+    const dayQuickSelect = document.getElementById("day-quick-select");
+    const upcomingPreviewBanner = document.getElementById("upcoming-preview-banner");
+    const upcomingBannerDesc = document.getElementById("upcoming-banner-desc");
 
     // Sync Elements
     const syncModalBtn = document.getElementById("sync-modal-btn");
@@ -318,7 +321,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const headerSyncDot = document.getElementById("header-sync-dot");
     const headerSyncText = document.getElementById("header-sync-text");
 
-    // Modal Elements
+    // Sources Modal Elements
     const todaySourcesBtn = document.getElementById("today-sources-btn");
     const sourcesModal = document.getElementById("sources-modal");
     const closeModalBtn = document.getElementById("close-modal-btn");
@@ -328,6 +331,17 @@ document.addEventListener("DOMContentLoaded", () => {
     const modalDsaLinks = document.getElementById("modal-dsa-links");
     const modalCoreTopic = document.getElementById("modal-core-topic");
     const modalCoreLinks = document.getElementById("modal-core-links");
+
+    // Roadmap Modal Elements
+    const roadmapModalBtn = document.getElementById("roadmap-modal-btn");
+    const roadmapModal = document.getElementById("roadmap-modal");
+    const closeRoadmapModalBtn = document.getElementById("close-roadmap-modal-btn");
+    const roadmapSearchInput = document.getElementById("roadmap-search-input");
+    const roadmapClearSearchBtn = document.getElementById("roadmap-clear-search-btn");
+    const roadmapList = document.getElementById("roadmap-list");
+    const statTotal = document.getElementById("stat-total");
+    const statCompleted = document.getElementById("stat-completed");
+    const statUpcoming = document.getElementById("stat-upcoming");
 
     // --- 2. LOCAL DATE UTILITIES ---
     function getLocalDateKey(d) {
@@ -459,6 +473,169 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
+    // --- 5B. POPULATE & CONTROL ROADMAP MODAL ---
+    function initDayQuickSelect() {
+        if (!dayQuickSelect) return;
+        dayQuickSelect.innerHTML = '<option value="">Jump to Plan Day...</option>';
+        const sortedPlanKeys = Object.keys(STUDY_PLAN).sort();
+        sortedPlanKeys.forEach(dKey => {
+            const plan = STUDY_PLAN[dKey];
+            const [y, m, d] = dKey.split("-").map(Number);
+            const dateObj = new Date(y, m - 1, d);
+            const dateStr = dateObj.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+            const opt = document.createElement("option");
+            opt.value = dKey;
+            opt.innerText = `Day ${plan.dayIndex}: ${plan.dsa} & ${plan.core} (${dateStr})`;
+            dayQuickSelect.appendChild(opt);
+        });
+
+        dayQuickSelect.addEventListener("change", (e) => {
+            if (e.target.value) {
+                renderDayView(e.target.value);
+            }
+        });
+    }
+
+    function renderRoadmapModal(filterQuery = "") {
+        if (!roadmapList) return;
+        roadmapList.innerHTML = "";
+        const history = getHistory();
+        const sortedPlanKeys = Object.keys(STUDY_PLAN).sort();
+        const query = filterQuery.trim().toLowerCase();
+
+        let completedCount = 0;
+        let upcomingCount = 0;
+        let visibleCount = 0;
+
+        sortedPlanKeys.forEach(dKey => {
+            const plan = STUDY_PLAN[dKey];
+            const [y, m, d] = dKey.split("-").map(Number);
+            const dateObj = new Date(y, m - 1, d);
+            const isCompleted = history[dKey] === "SUCCESS";
+            const isToday = dKey === todayKey;
+            const isFuture = dKey > todayKey;
+            const isMissed = dKey < todayKey && !isCompleted;
+
+            if (isCompleted) completedCount++;
+            if (isFuture && !isCompleted) upcomingCount++;
+
+            // Search Filter
+            const dateFormatted = dateObj.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+            const matchText = `day ${plan.dayIndex} ${plan.dsa} ${plan.core} ${dateFormatted} ${dKey}`.toLowerCase();
+            if (query && !matchText.includes(query)) {
+                return;
+            }
+            visibleCount++;
+
+            const card = document.createElement("div");
+            card.className = "roadmap-card";
+            if (isCompleted) card.classList.add("completed");
+            if (isToday) card.classList.add("today");
+            if (dKey === selectedDateKey) card.classList.add("active-selected");
+
+            let statusLabel = "UPCOMING";
+            let statusClass = "upcoming";
+            if (isCompleted) {
+                statusLabel = "COMPLETED ✓";
+                statusClass = "success";
+            } else if (isToday) {
+                statusLabel = "TODAY";
+                statusClass = "today";
+            } else if (isMissed) {
+                statusLabel = "MISSED";
+                statusClass = "missed";
+            }
+
+            const dsaCount = (plan.dsaLinks || []).length;
+            const coreCount = (plan.coreLinks || []).length;
+
+            card.innerHTML = `
+                <div class="roadmap-card-left">
+                    <div class="roadmap-day-badge">
+                        <span class="roadmap-day-num">DAY ${plan.dayIndex}</span>
+                        <span class="roadmap-day-date">${dateObj.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</span>
+                    </div>
+                    <div class="roadmap-topics">
+                        <div class="roadmap-topic-dsa">
+                            <span>${plan.dsa}</span>
+                            <span class="roadmap-source-counts">${dsaCount} Practice Links</span>
+                        </div>
+                        <div class="roadmap-topic-core">
+                            <span>Core: <strong>${plan.core}</strong></span>
+                            <span>•</span>
+                            <span>${coreCount} Study Guides</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="roadmap-card-right">
+                    <span class="roadmap-status-pill ${statusClass}">${statusLabel}</span>
+                    <button class="roadmap-go-btn" type="button" title="View work for Day ${plan.dayIndex}">View Day ➔</button>
+                </div>
+            `;
+
+            card.addEventListener("click", () => {
+                if (roadmapModal) roadmapModal.classList.add("hidden");
+                renderDayView(dKey);
+                const grid = document.getElementById("calendar-grid");
+                if (grid) {
+                    const target = grid.querySelector(`.day-box[data-date-key="${dKey}"]`);
+                    if (target) target.scrollIntoView({ block: "center", behavior: "smooth" });
+                }
+            });
+
+            roadmapList.appendChild(card);
+        });
+
+        if (statTotal) statTotal.innerText = String(sortedPlanKeys.length);
+        if (statCompleted) statCompleted.innerText = String(completedCount);
+        if (statUpcoming) statUpcoming.innerText = String(upcomingCount);
+
+        if (visibleCount === 0) {
+            const empty = document.createElement("div");
+            empty.className = "roadmap-empty";
+            empty.innerText = `No topics matching "${filterQuery}". Try searching for "DP", "Trees", "DBMS", "OS", or "Recursion".`;
+            roadmapList.appendChild(empty);
+        }
+    }
+
+    if (roadmapModalBtn && roadmapModal && closeRoadmapModalBtn) {
+        roadmapModalBtn.addEventListener("click", () => {
+            renderRoadmapModal(roadmapSearchInput ? roadmapSearchInput.value : "");
+            roadmapModal.classList.remove("hidden");
+            if (roadmapSearchInput) roadmapSearchInput.focus();
+        });
+
+        closeRoadmapModalBtn.addEventListener("click", () => {
+            roadmapModal.classList.add("hidden");
+        });
+
+        window.addEventListener("click", (e) => {
+            if (e.target === roadmapModal) {
+                roadmapModal.classList.add("hidden");
+            }
+        });
+
+        if (roadmapSearchInput) {
+            roadmapSearchInput.addEventListener("input", (e) => {
+                const val = e.target.value;
+                if (roadmapClearSearchBtn) {
+                    if (val) roadmapClearSearchBtn.classList.remove("hidden");
+                    else roadmapClearSearchBtn.classList.add("hidden");
+                }
+                renderRoadmapModal(val);
+            });
+        }
+
+        if (roadmapClearSearchBtn && roadmapSearchInput) {
+            roadmapClearSearchBtn.addEventListener("click", () => {
+                roadmapSearchInput.value = "";
+                roadmapClearSearchBtn.classList.add("hidden");
+                renderRoadmapModal("");
+                roadmapSearchInput.focus();
+            });
+        }
+    }
+
     // --- 6. RENDER DAY VIEW (CURRENT, PAST, OR FUTURE) ---
     function renderDayView(dateKey) {
         selectedDateKey = dateKey;
@@ -468,15 +645,22 @@ document.addEventListener("DOMContentLoaded", () => {
         const plan = resolvePlan(dateKey);
         const prevKey = getPreviousDateKey(dateKey);
         const prevPlan = STUDY_PLAN[prevKey];
+        const isFuture = dateKey > todayKey;
+        const isToday = dateKey === todayKey;
+        const isPast = dateKey < todayKey;
 
-        // 1. Update Date Header
+        // 1. Update Date Header & Quick Day Dropdown
         if (currentDateEl) {
             currentDateEl.innerText = dateObj.toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' });
         }
+        if (dayQuickSelect) {
+            dayQuickSelect.value = STUDY_PLAN[dateKey] ? dateKey : "";
+        }
 
         // 2. Navigation & Button State
-        if (dateKey === todayKey) {
+        if (isToday) {
             if (jumpTodayBtn) jumpTodayBtn.classList.add("hidden");
+            if (upcomingPreviewBanner) upcomingPreviewBanner.classList.add("hidden");
             if (saveBtn) {
                 saveBtn.innerText = "COMPLETE DAY";
                 saveBtn.disabled = false;
@@ -484,11 +668,12 @@ document.addEventListener("DOMContentLoaded", () => {
             }
             if (todaySourcesBtn) todaySourcesBtn.innerText = "SOURCES FOR TODAY ↗";
             if (planTagEl) planTagEl.innerText = plan.tag;
-        } else if (dateKey < todayKey) {
+        } else if (isPast) {
             if (jumpTodayBtn) {
                 jumpTodayBtn.classList.remove("hidden");
                 jumpTodayBtn.innerText = "Today ↩";
             }
+            if (upcomingPreviewBanner) upcomingPreviewBanner.classList.add("hidden");
             if (saveBtn) {
                 const isAlreadySuccess = history[dateKey] === "SUCCESS";
                 saveBtn.innerText = isAlreadySuccess ? "UPDATE PAST DAY" : "RECOVER PAST DAY";
@@ -503,13 +688,20 @@ document.addEventListener("DOMContentLoaded", () => {
                 jumpTodayBtn.classList.remove("hidden");
                 jumpTodayBtn.innerText = "Today ↩";
             }
-            if (saveBtn) {
-                saveBtn.innerText = "FUTURE DAY (LOCKED)";
-                saveBtn.disabled = true;
-                saveBtn.title = "You cannot complete future days in advance";
+            if (upcomingPreviewBanner) {
+                upcomingPreviewBanner.classList.remove("hidden");
+                if (upcomingBannerDesc) {
+                    upcomingBannerDesc.innerText = `Scheduled work for ${dateObj.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}: ${plan.dsa} & ${plan.core}. You can explore interview sources or study ahead.`;
+                }
             }
-            if (todaySourcesBtn) todaySourcesBtn.innerText = "PREVIEW SOURCES ↗";
-            if (planTagEl) planTagEl.innerText = `Previewing Upcoming Day • Day ${plan.dayIndex || ''} (${plan.dsa})`;
+            if (saveBtn) {
+                const isAlreadySuccess = history[dateKey] === "SUCCESS";
+                saveBtn.innerText = isAlreadySuccess ? "UPDATE EARLY WORK" : "COMPLETE DAY EARLY";
+                saveBtn.disabled = false;
+                saveBtn.title = "Log early completion for this upcoming day";
+            }
+            if (todaySourcesBtn) todaySourcesBtn.innerText = "VIEW SOURCES FOR THIS DAY ↗";
+            if (planTagEl) planTagEl.innerText = `Upcoming • Day ${plan.dayIndex || ''} (${plan.dsa})`;
         }
 
         // 3. Task Topic Labels
@@ -543,31 +735,25 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
         // 6. Checkbox States & Status Badge
-        const isFuture = dateKey > todayKey;
         const isCompletedInHistory = history[dateKey] === "SUCCESS";
 
         TASK_IDS.forEach(id => {
             const el = document.getElementById(id);
             if (el) {
-                el.disabled = isFuture;
-                if (isFuture) {
-                    el.checked = false;
-                    updateTaskRowState(id, false);
-                } else {
-                    const storedVal = localStorage.getItem(`${dateKey}_${id}`);
-                    const isChecked = storedVal !== null ? (storedVal === "true") : isCompletedInHistory;
-                    el.checked = isChecked;
-                    updateTaskRowState(id, isChecked);
-                }
+                el.disabled = false; // Interactive for past, today, and future
+                const storedVal = localStorage.getItem(`${dateKey}_${id}`);
+                const isChecked = storedVal !== null ? (storedVal === "true") : isCompletedInHistory;
+                el.checked = isChecked;
+                updateTaskRowState(id, isChecked);
             }
         });
 
         // 7. Status Badge Text
-        if (isFuture) {
-            updateStatusBadge("UPCOMING");
-        } else if (history[dateKey]) {
+        if (history[dateKey]) {
             updateStatusBadge(history[dateKey]);
-        } else if (dateKey < todayKey) {
+        } else if (isFuture) {
+            updateStatusBadge("UPCOMING");
+        } else if (isPast) {
             updateStatusBadge("MISSED");
         } else {
             updateStatusBadge("PENDING");
@@ -579,13 +765,26 @@ document.addEventListener("DOMContentLoaded", () => {
 
     function updateCalendarSelection(dateKey) {
         const allBoxes = document.querySelectorAll(".day-box");
+        let selectedEl = null;
         allBoxes.forEach(box => {
             if (box.dataset.dateKey === dateKey) {
                 box.classList.add("selected");
+                selectedEl = box;
             } else {
                 box.classList.remove("selected");
             }
         });
+
+        if (selectedEl) {
+            const grid = document.getElementById("calendar-grid");
+            if (grid) {
+                const gridRect = grid.getBoundingClientRect();
+                const boxRect = selectedEl.getBoundingClientRect();
+                if (boxRect.top < gridRect.top || boxRect.bottom > gridRect.bottom) {
+                    selectedEl.scrollIntoView({ block: "center", behavior: "smooth" });
+                }
+            }
+        }
     }
 
     // --- 7. LOCAL STORAGE RESET (MIDNIGHT CHECK) ---
@@ -651,8 +850,6 @@ document.addEventListener("DOMContentLoaded", () => {
     // Save / Complete Day Button
     if (saveBtn) {
         saveBtn.addEventListener("click", () => {
-            if (selectedDateKey > todayKey) return;
-
             const allChecked = TASK_IDS.every(id => {
                 const el = document.getElementById(id);
                 return el && el.checked;
@@ -677,6 +874,12 @@ document.addEventListener("DOMContentLoaded", () => {
                 } else {
                     alert("❌ Day Logged as Incomplete.\n\nMake sure to complete both the DSA topic and Core Subject before the day ends.");
                 }
+            } else if (selectedDateKey > todayKey) {
+                if (allChecked) {
+                    alert(`✅ Mission Accomplished in Advance!\n\nUpcoming day ${selectedDate.toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' })} has been completed early and marked green in your schedule! Working ahead pays off.`);
+                } else {
+                    alert(`⚠️ Upcoming Day Logged as Incomplete.\n\nCheck off both tasks to mark this upcoming day complete.`);
+                }
             } else {
                 if (allChecked) {
                     alert(`✅ Past Day Recovered!\n\n${selectedDate.toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' })} has been successfully completed and marked green in your history! Working harder pays off.`);
@@ -687,20 +890,38 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
-    // --- 9. CALENDAR RENDERER (CLICKABLE DAYS FOR REVISITING) ---
+    // --- 9. CALENDAR RENDERER (CLICKABLE DAYS FOR REVISITING & PREVIEWING) ---
     function renderCalendar() {
         const grid = document.getElementById("calendar-grid");
         if (!grid) return;
         grid.innerHTML = "";
         const history = getHistory();
 
+        // Calculate calendar span
+        const sortedPlanKeys = Object.keys(STUDY_PLAN).sort();
+        const latestPlanKey = sortedPlanKeys[sortedPlanKeys.length - 1] || todayKey;
+        const [lastY, lastM, lastD] = latestPlanKey.split("-").map(Number);
+        
+        // Ensure calendar covers at least until end of month of latest plan day or +35 days from now
+        const minFutureDate = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 35);
+        const planMonthEnd = new Date(lastY, lastM, 0); // Last day of that month
+        const futureLimitTime = Math.max(planMonthEnd.getTime(), minFutureDate.getTime());
+        const futureLimitDate = new Date(futureLimitTime);
+        const calendarEndDate = new Date(futureLimitDate.getFullYear(), futureLimitDate.getMonth() + 1, 0); // end of that month
+
+        // 365 days of past history
+        const calendarStartDate = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 365);
+
+        const msPerDay = 1000 * 60 * 60 * 24;
+        const totalDays = Math.round((calendarEndDate.getTime() - calendarStartDate.getTime()) / msPerDay) + 1;
+
         let lastMonthLabel = "";
 
-        // Loop through last 365 days up to today
-        for (let i = 0; i < 365; i++) {
-            const d = new Date(now.getFullYear(), now.getMonth(), now.getDate() - (364 - i));
+        for (let i = 0; i < totalDays; i++) {
+            const d = new Date(calendarStartDate.getFullYear(), calendarStartDate.getMonth(), calendarStartDate.getDate() + i);
             const dKey = getLocalDateKey(d);
             const dayNum = d.getDate();
+            const isFuture = dKey > todayKey;
 
             // Month Label (e.g., "October 2026")
             const monthLabel = d.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
@@ -718,13 +939,21 @@ document.addEventListener("DOMContentLoaded", () => {
             dayEl.innerText = dayNum;
             dayEl.dataset.dateKey = dKey;
 
+            if (isFuture) {
+                dayEl.classList.add("future");
+            }
+
             // Study Plan Annotation
             if (STUDY_PLAN[dKey]) {
                 const sp = STUDY_PLAN[dKey];
-                dayEl.title = `${d.toDateString()} (Day ${sp.dayIndex} of 21)\nDSA: ${sp.dsa}\nCore: ${sp.core}\n\nClick to revisit and complete tasks.`;
+                if (isFuture) {
+                    dayEl.title = `${d.toDateString()} (Day ${sp.dayIndex} of 21)\nDSA: ${sp.dsa}\nCore: ${sp.core}\n\nUpcoming scheduled day: Click to view work & sources.`;
+                } else {
+                    dayEl.title = `${d.toDateString()} (Day ${sp.dayIndex} of 21)\nDSA: ${sp.dsa}\nCore: ${sp.core}\n\nClick to revisit and complete tasks.`;
+                }
                 dayEl.classList.add("has-plan");
             } else {
-                dayEl.title = `${d.toDateString()}\nClick to view.`;
+                dayEl.title = isFuture ? `${d.toDateString()}\nUpcoming day: Click to view work.` : `${d.toDateString()}\nClick to view.`;
             }
 
             // Mark Today
@@ -744,7 +973,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 dayEl.classList.add("failed");
             }
 
-            // Clickable Day Box to Revisit
+            // Clickable Day Box to Revisit or Preview
             dayEl.addEventListener("click", () => {
                 renderDayView(dKey);
             });
@@ -752,9 +981,12 @@ document.addEventListener("DOMContentLoaded", () => {
             grid.appendChild(dayEl);
         }
 
-        // Auto-scroll to bottom
+        // Center scroll on selected date or today
         requestAnimationFrame(() => {
-            grid.scrollTop = grid.scrollHeight;
+            const targetEl = grid.querySelector(`.day-box[data-date-key="${selectedDateKey}"]`) || grid.querySelector(".day-box.today");
+            if (targetEl) {
+                targetEl.scrollIntoView({ block: "center", behavior: "smooth" });
+            }
         });
     }
 
@@ -1086,6 +1318,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     // --- 12. INITIAL RENDER & IMMEDIATE AUTO-SYNC ---
+    initDayQuickSelect();
     renderCalendar();
     renderDayView(todayKey);
     updateSyncUI();

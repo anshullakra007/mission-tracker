@@ -26,6 +26,9 @@
                     <span class="sync-status-dot" id="header-sync-dot"></span>
                     <span id="header-sync-text">CLOUD SYNC</span>
                 </button>
+                <button id="roadmap-modal-btn" class="action-btn header-btn roadmap-btn" title="View 21-Day Study Plan &amp; Upcoming Schedule">
+                    <span>PLAN ROADMAP 📅</span>
+                </button>
                 <button id="today-sources-btn" class="action-btn header-btn">SOURCES FOR TODAY ↗</button>
             </div>
         </header>
@@ -40,10 +43,21 @@
                             <span id="current-date"></span>
                             <button id="next-day-btn" class="date-nav-btn" title="Next day">&rarr;</button>
                             <button id="jump-today-btn" class="jump-today-btn hidden" title="Return to today">Today ↩</button>
+                            <select id="day-quick-select" class="day-quick-select" title="Jump to any Study Plan day">
+                                <option value="">Jump to Plan Day...</option>
+                            </select>
                         </div>
                         <span class="plan-tag" id="plan-tag">Study Plan: Day 1 of 21</span>
                     </div>
                     <span class="status-badge" id="daily-status">Pending</span>
+                </div>
+
+                <div id="upcoming-preview-banner" class="upcoming-preview-banner hidden">
+                    <span class="banner-icon">📅</span>
+                    <div class="banner-text">
+                        <strong>Upcoming Day Preview:</strong>
+                        <span id="upcoming-banner-desc">Scheduled work for this day. You can review topics, practice problems, or complete ahead.</span>
+                    </div>
                 </div>
                 
                 <div class="checklist">
@@ -85,20 +99,55 @@
 
             <section class="history-section">
                 <div class="history-header">
-                    <h2>Performance History</h2>
-                    <span class="history-hint">Click any day to revisit &amp; complete</span>
+                    <h2>Performance &amp; Schedule</h2>
+                    <span class="history-hint">Click any past or future day to view work</span>
                 </div>
                 <div class="calendar-grid" id="calendar-grid"></div>
                 <div class="legend">
                     <div class="legend-item"><span class="dot red"></span> Missed</div>
                     <div class="legend-item"><span class="dot green"></span> Completed</div>
                     <div class="legend-item"><span class="dot gray"></span> Pending</div>
+                    <div class="legend-item"><span class="dot future"></span> Upcoming</div>
                     <div class="legend-item"><span class="dot blue"></span> Study Plan</div>
                 </div>
             </section>
 
         </div>
 
+    </div>
+
+    <!-- 21-DAY STUDY PLAN ROADMAP MODAL -->
+    <div id="roadmap-modal" class="modal hidden">
+        <div class="modal-content roadmap-modal-content">
+            <div class="modal-header">
+                <div>
+                    <span class="modal-subtitle">21-DAY HIGH-YIELD CURRICULUM</span>
+                    <h2 class="modal-title">Study Plan &amp; Upcoming Schedule</h2>
+                </div>
+                <span id="close-roadmap-modal-btn" class="close-btn" title="Close">&times;</span>
+            </div>
+            
+            <div class="roadmap-controls">
+                <div class="roadmap-search-wrap">
+                    <span class="search-icon">🔍</span>
+                    <input type="text" id="roadmap-search-input" placeholder="Search topics (e.g. DP, Recursion, DBMS, Trees, OS)..." autocomplete="off" spellcheck="false">
+                    <button id="roadmap-clear-search-btn" class="clear-search-btn hidden" title="Clear search">&times;</button>
+                </div>
+                <div class="roadmap-stats" id="roadmap-stats">
+                    <span class="stat-pill"><strong id="stat-total">21</strong> Total Days</span>
+                    <span class="stat-pill success"><strong id="stat-completed">0</strong> Completed</span>
+                    <span class="stat-pill upcoming"><strong id="stat-upcoming">0</strong> Upcoming</span>
+                </div>
+            </div>
+
+            <div class="roadmap-list" id="roadmap-list">
+                <!-- Populated dynamically by script.js -->
+            </div>
+
+            <div class="sources-modal-footer">
+                <span>💡 Click any day card above to jump straight to that day's tasks, notes, and interview sources in Mission Control.</span>
+            </div>
+        </div>
     </div>
 
     <!-- DAILY INTERVIEW SOURCES MODAL -->

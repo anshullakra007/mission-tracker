@@ -8,13 +8,18 @@ A minimalist, daily-resetting checklist designed for high-performance tracking. 
 
 ##  Features
 * Daily Auto-Reset: The checklist automatically unchecks itself at the start of a new day (local time).
-* Performance History: Tracks your daily completion status (Success/Fail) and visualizes it on a calendar grid.
+* Future Days & Curriculum Preview: Seamlessly navigate into upcoming days, view scheduled DSA topics & Core CS subjects, explore curated practice sheets, and even complete work in advance.
+* 21-Day Study Plan Roadmap: Interactive curriculum modal allowing you to search and browse all 21 study days with status indicators and 1-click day jumping.
+* Performance & Schedule Calendar: Visualizes your past consistency (Completed / Missed) and upcoming scheduled study plan days.
 * Persistent Data: Uses `localStorage` to save your history and checkbox state, so you never lose progress upon refresh.
 * Visual Feedback:
     * Green: Day Completed (All tasks done).
-    * Red: Day Failed (Tasks missed).
+    * Red: Day Failed / Missed.
+    * Blue Dot: Study Plan Day.
+    * Dashed Border: Upcoming / Future Days.
     * White Border: Current Day.
-* Privacy First: All data is stored locally in your browser. No databases, no tracking.
+* Cross-Device Cloud Sync: Real-time background synchronization between phone and laptop.
+* Privacy First: All data is stored locally in your browser with optional private cloud sync. No tracking.
 
 ## System Architecture & Midnight Rollover Flow
 
